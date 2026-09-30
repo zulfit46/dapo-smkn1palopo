@@ -22,6 +22,17 @@ export default async function handler(req: any, res: any) {
     return String(val).trim().replace(/^["']|["']$/g, '').trim();
   };
 
+  const parseThreadId = (val: string): string => {
+    if (!val) return '';
+    const matchC = val.match(/t\.me\/c\/\d+\/(\d+)/i);
+    if (matchC && matchC[1]) return matchC[1];
+    const matchWeb = val.match(/#(-?\d+)_(\d+)/i);
+    if (matchWeb && matchWeb[2]) return matchWeb[2];
+    const matchUser = val.match(/t\.me\/[^/]+\/(\d+)/i);
+    if (matchUser && matchUser[1]) return matchUser[1];
+    return val;
+  };
+
   try {
     let body = req.body;
     if (typeof Buffer !== 'undefined' && Buffer.isBuffer(body)) {
@@ -54,7 +65,26 @@ export default async function handler(req: any, res: any) {
 
     const reqChatId = cleanVal(body.chatId);
     const envChatId = cleanVal(process.env.TELEGRAM_CHAT_ID || process.env.VITE_TELEGRAM_CHAT_ID);
-    const chatId = reqChatId || envChatId;
+    const rawChatId = reqChatId || envChatId;
+
+    // Otomatis ekstrak Chat ID grup (-100...) dan Thread ID jika user menempel link t.me/c/...
+    let chatId = rawChatId;
+    let extractedThreadId = '';
+    const matchTme = rawChatId.match(/t\.me\/c\/(\d+)(?:\/(\d+))?/i);
+    if (matchTme && matchTme[1]) {
+      chatId = `-100${matchTme[1]}`;
+      if (matchTme[2]) {
+        extractedThreadId = matchTme[2];
+      }
+    }
+    const matchWeb = rawChatId.match(/#(-?\d+)(?:_(\d+))?/i);
+    if (matchWeb && matchWeb[1]) {
+      const raw = matchWeb[1];
+      chatId = raw.startsWith('-') ? raw : `-100${raw}`;
+      if (matchWeb[2]) {
+        extractedThreadId = matchWeb[2];
+      }
+    }
 
     const message = body.message;
 
@@ -69,7 +99,31 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    const threadId = cleanVal(body.threadId || body.message_thread_id);
+    // Resolusi Thread ID: dari request body atau dari Environment Variables berdasarkan kategori / teks pesan
+    const category = cleanVal(body.category).toLowerCase();
+    let threadId = parseThreadId(cleanVal(body.threadId || body.message_thread_id)) || extractedThreadId;
+
+    if (!threadId) {
+      if (category === 'mutasi_keluar' || message.includes('[MUTASI KELUAR]')) {
+        threadId = parseThreadId(cleanVal(
+          process.env.TELEGRAM_THREAD_ID_MUTASI_KELUAR || 
+          process.env.TELEGRAM_THREAD_ID_KELUAR || 
+          process.env.VITE_TELEGRAM_THREAD_ID_MUTASI_KELUAR
+        ));
+      } else if (category === 'mutasi_masuk' || message.includes('[MUTASI MASUK]')) {
+        threadId = parseThreadId(cleanVal(
+          process.env.TELEGRAM_THREAD_ID_MUTASI_MASUK || 
+          process.env.TELEGRAM_THREAD_ID_MASUK || 
+          process.env.VITE_TELEGRAM_THREAD_ID_MUTASI_MASUK
+        ));
+      } else if (category === 'pangkat' || message.includes('PANGKAT')) {
+        threadId = parseThreadId(cleanVal(process.env.TELEGRAM_THREAD_ID_PANGKAT || process.env.VITE_TELEGRAM_THREAD_ID_PANGKAT));
+      } else if (category === 'kgb' || message.includes('GAJI BERKALA')) {
+        threadId = parseThreadId(cleanVal(process.env.TELEGRAM_THREAD_ID_KGB || process.env.VITE_TELEGRAM_THREAD_ID_KGB));
+      } else if (category === 'verval_pd' || message.includes('VERVAL PD')) {
+        threadId = parseThreadId(cleanVal(process.env.TELEGRAM_THREAD_ID_VERVALPD || process.env.VITE_TELEGRAM_THREAD_ID_VERVALPD));
+      }
+    }
 
     const payload: Record<string, any> = {
       chat_id: chatId,
@@ -127,9 +181,12 @@ export default async function handler(req: any, res: any) {
     return res.status(200).json({
       status: 'success',
       message: fallbackToMainChat
-        ? 'Pesan dialihkan ke ruang chat utama grup karena Topik/Thread ID tidak ditemukan di grup Telegram'
-        : 'Pesan berhasil dikirim ke Telegram',
+        ? 'Peringatan: Topik/Thread ID tidak ditemukan di grup Telegram, pesan dialihkan ke ruang chat utama (General)'
+        : (payload.message_thread_id 
+            ? `Pesan berhasil dikirim ke Topik (Thread ID: ${payload.message_thread_id})` 
+            : 'Pesan berhasil dikirim ke ruang chat grup'),
       fallbackToMainChat,
+      threadId: payload.message_thread_id || null,
       result: data,
     });
   } catch (err: any) {
