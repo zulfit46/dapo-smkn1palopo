@@ -248,7 +248,7 @@ export async function sendTelegramMessage(
   message: string,
   customConfig?: Partial<TelegramConfig>,
   webAppUrl?: string,
-  options?: { threadId?: string; targetChatId?: string }
+  options?: { threadId?: string; targetChatId?: string; category?: string }
 ): Promise<{ success: boolean; message: string }> {
   const currentConfig = customConfig?.botToken ? { ...DEFAULT_TELEGRAM_CONFIG, ...customConfig } : await getTelegramConfig();
   const botToken = cleanVal(customConfig?.botToken || currentConfig.botToken || ENV_BOT_TOKEN);
@@ -267,6 +267,7 @@ export async function sendTelegramMessage(
         message,
         threadId,
         message_thread_id: threadId,
+        category: options?.category,
       }),
       signal: AbortSignal.timeout(10000),
     });
@@ -278,8 +279,8 @@ export async function sendTelegramMessage(
         return {
           success: true,
           message: data.fallbackToMainChat
-            ? 'Pesan terkirim ke ruang utama grup (Topik/Thread ID tidak ditemukan)'
-            : 'Pesan berhasil terkirim ke Telegram'
+            ? 'Peringatan: Topik/Thread ID tidak ditemukan di grup, dialihkan ke chat General'
+            : (data.message || 'Pesan berhasil terkirim ke Telegram')
         };
       }
       console.warn('[Telegram] Server proxy response:', data.message);
@@ -403,7 +404,11 @@ export async function notifyMutasiMasuk(
   const targetChatId = conf.chatIdMutasiMasuk || conf.chatId;
   const threadId = conf.threadIdMutasiMasuk;
 
-  return sendTelegramMessage(message, conf, webAppUrl, { threadId, targetChatId });
+  return sendTelegramMessage(message, conf, webAppUrl, { 
+    threadId, 
+    targetChatId, 
+    category: 'mutasi_masuk' 
+  });
 }
 
 /**
@@ -536,7 +541,11 @@ export async function notifyMutasiKeluar(
   const targetChatId = conf.chatIdMutasiKeluar || conf.chatId;
   const threadId = conf.threadIdMutasiKeluar;
 
-  return sendTelegramMessage(message, conf, webAppUrl, { threadId, targetChatId });
+  return sendTelegramMessage(message, conf, webAppUrl, { 
+    threadId, 
+    targetChatId, 
+    category: 'mutasi_keluar' 
+  });
 }
 
 export interface VervalPDItemNotification {
