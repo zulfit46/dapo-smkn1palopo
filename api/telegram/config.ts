@@ -17,9 +17,58 @@ export default async function handler(req: any, res: any) {
     return String(val).trim().replace(/^["']|["']$/g, '').trim();
   };
 
+  const parseChatId = (val: string): string => {
+    const match = val.match(/t\.me\/c\/(\d+)/i);
+    if (match && match[1]) {
+      return `-100${match[1]}`;
+    }
+    const matchWeb = val.match(/#(-?\d+)/i);
+    if (matchWeb && matchWeb[1]) {
+      const raw = matchWeb[1];
+      return raw.startsWith('-') ? raw : `-100${raw}`;
+    }
+    return val;
+  };
+
+  const parseThreadId = (val: string): string => {
+    if (!val) return '';
+    const matchC = val.match(/t\.me\/c\/\d+\/(\d+)/i);
+    if (matchC && matchC[1]) return matchC[1];
+    const matchWeb = val.match(/#(-?\d+)_(\d+)/i);
+    if (matchWeb && matchWeb[2]) return matchWeb[2];
+    const matchUser = val.match(/t\.me\/[^/]+\/(\d+)/i);
+    if (matchUser && matchUser[1]) return matchUser[1];
+    return val;
+  };
+
   const defaultBotToken = cleanVal(process.env.TELEGRAM_BOT_TOKEN || process.env.VITE_TELEGRAM_BOT_TOKEN);
-  const defaultChatId = cleanVal(process.env.TELEGRAM_CHAT_ID || process.env.VITE_TELEGRAM_CHAT_ID);
+  const rawDefaultChatId = cleanVal(process.env.TELEGRAM_CHAT_ID || process.env.VITE_TELEGRAM_CHAT_ID);
+  const defaultChatId = parseChatId(rawDefaultChatId);
   const hasEnvToken = Boolean(defaultBotToken && defaultChatId);
+
+  // Baca Thread IDs dari Vercel Environment Variables
+  const envThreadMutasiKeluar = parseThreadId(cleanVal(
+    process.env.TELEGRAM_THREAD_ID_MUTASI_KELUAR || 
+    process.env.TELEGRAM_THREAD_ID_KELUAR || 
+    process.env.VITE_TELEGRAM_THREAD_ID_MUTASI_KELUAR
+  ));
+  const envThreadMutasiMasuk = parseThreadId(cleanVal(
+    process.env.TELEGRAM_THREAD_ID_MUTASI_MASUK || 
+    process.env.TELEGRAM_THREAD_ID_MASUK || 
+    process.env.VITE_TELEGRAM_THREAD_ID_MUTASI_MASUK
+  ));
+  const envThreadPangkat = parseThreadId(cleanVal(
+    process.env.TELEGRAM_THREAD_ID_PANGKAT || 
+    process.env.VITE_TELEGRAM_THREAD_ID_PANGKAT
+  ));
+  const envThreadKGB = parseThreadId(cleanVal(
+    process.env.TELEGRAM_THREAD_ID_KGB || 
+    process.env.VITE_TELEGRAM_THREAD_ID_KGB
+  ));
+  const envThreadVervalPD = parseThreadId(cleanVal(
+    process.env.TELEGRAM_THREAD_ID_VERVALPD || 
+    process.env.VITE_TELEGRAM_THREAD_ID_VERVALPD
+  ));
 
   if (req.method === 'GET') {
     return res.status(200).json({
@@ -32,16 +81,16 @@ export default async function handler(req: any, res: any) {
       notifyPangkatBaru: true,
       notifyKGBBaru: true,
       notifyVervalPD: true,
-      threadIdMutasiMasuk: '',
-      threadIdMutasiKeluar: '',
-      threadIdPangkat: '',
-      threadIdKGB: '',
-      threadIdVervalPD: '',
-      chatIdMutasiMasuk: '',
-      chatIdMutasiKeluar: '',
-      chatIdPangkat: '',
-      chatIdKGB: '',
-      chatIdVervalPD: '',
+      threadIdMutasiMasuk: envThreadMutasiMasuk,
+      threadIdMutasiKeluar: envThreadMutasiKeluar,
+      threadIdPangkat: envThreadPangkat,
+      threadIdKGB: envThreadKGB,
+      threadIdVervalPD: envThreadVervalPD,
+      chatIdMutasiMasuk: parseChatId(cleanVal(process.env.TELEGRAM_CHAT_ID_MUTASI_MASUK)),
+      chatIdMutasiKeluar: parseChatId(cleanVal(process.env.TELEGRAM_CHAT_ID_MUTASI_KELUAR)),
+      chatIdPangkat: parseChatId(cleanVal(process.env.TELEGRAM_CHAT_ID_PANGKAT)),
+      chatIdKGB: parseChatId(cleanVal(process.env.TELEGRAM_CHAT_ID_KGB)),
+      chatIdVervalPD: parseChatId(cleanVal(process.env.TELEGRAM_CHAT_ID_VERVALPD)),
     });
   }
 
@@ -63,7 +112,7 @@ export default async function handler(req: any, res: any) {
     body = body || {};
 
     const resolvedToken = cleanVal(body.botToken) || defaultBotToken;
-    const resolvedChatId = cleanVal(body.chatId) || defaultChatId;
+    const resolvedChatId = parseChatId(cleanVal(body.chatId)) || defaultChatId;
     const isNowConfigured = Boolean(resolvedToken && resolvedChatId);
 
     return res.status(200).json({
@@ -78,16 +127,16 @@ export default async function handler(req: any, res: any) {
         notifyPangkatBaru: body.notifyPangkatBaru ?? true,
         notifyKGBBaru: body.notifyKGBBaru ?? true,
         notifyVervalPD: body.notifyVervalPD ?? true,
-        threadIdMutasiMasuk: cleanVal(body.threadIdMutasiMasuk),
-        threadIdMutasiKeluar: cleanVal(body.threadIdMutasiKeluar),
-        threadIdPangkat: cleanVal(body.threadIdPangkat),
-        threadIdKGB: cleanVal(body.threadIdKGB),
-        threadIdVervalPD: cleanVal(body.threadIdVervalPD),
-        chatIdMutasiMasuk: cleanVal(body.chatIdMutasiMasuk),
-        chatIdMutasiKeluar: cleanVal(body.chatIdMutasiKeluar),
-        chatIdPangkat: cleanVal(body.chatIdPangkat),
-        chatIdKGB: cleanVal(body.chatIdKGB),
-        chatIdVervalPD: cleanVal(body.chatIdVervalPD),
+        threadIdMutasiMasuk: parseThreadId(cleanVal(body.threadIdMutasiMasuk)) || envThreadMutasiMasuk,
+        threadIdMutasiKeluar: parseThreadId(cleanVal(body.threadIdMutasiKeluar)) || envThreadMutasiKeluar,
+        threadIdPangkat: parseThreadId(cleanVal(body.threadIdPangkat)) || envThreadPangkat,
+        threadIdKGB: parseThreadId(cleanVal(body.threadIdKGB)) || envThreadKGB,
+        threadIdVervalPD: parseThreadId(cleanVal(body.threadIdVervalPD)) || envThreadVervalPD,
+        chatIdMutasiMasuk: parseChatId(cleanVal(body.chatIdMutasiMasuk)),
+        chatIdMutasiKeluar: parseChatId(cleanVal(body.chatIdMutasiKeluar)),
+        chatIdPangkat: parseChatId(cleanVal(body.chatIdPangkat)),
+        chatIdKGB: parseChatId(cleanVal(body.chatIdKGB)),
+        chatIdVervalPD: parseChatId(cleanVal(body.chatIdVervalPD)),
       },
     });
   }
