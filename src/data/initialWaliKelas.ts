@@ -1,0 +1,60 @@
+import { WaliKelas } from '../types';
+
+export const INITIAL_WALI_KELAS_LIST: WaliKelas[] = [
+  { kelas: "10 AKL 1", nama: "Andi Sri Herawati Suhardi", nip: "199404282023212043" },
+  { kelas: "10 AKL 2", nama: "Ayustira Fadly", nip: "200103182025212038" },
+  { kelas: "10 AKL 3", nama: "Pitriani", nip: "198607012023212029" },
+  { kelas: "10 Kuliner 1", nama: "FETY SETIAWATI FERMAN", nip: "199212192022212028" },
+  { kelas: "10 Kuliner 2", nama: "Rahmat Hidayatullah Saleh", nip: "199611222025211022" },
+  { kelas: "10 MPLB 1", nama: "Imam Jiten Marzuki", nip: "199705072023211010" },
+  { kelas: "10 MPLB 2", nama: "Lisna Herlin", nip: "197901042023212012" },
+  { kelas: "10 MPLB 3", nama: "Riska Damayanti", nip: "199510012025212150" },
+  { kelas: "10 MPLB 4", nama: "NURFADILLAH MUIS", nip: "111111" },
+  { kelas: "10 PMS 1", nama: "Nurhidayati", nip: "198505282011012003" },
+  { kelas: "10 PMS 2", nama: "Pramita Handayani", nip: "198807072011022001" },
+  { kelas: "10 PMS 3", nama: "Mega Afrianti L, S.pd", nip: "198604242022212063" },
+  { kelas: "10 TJKT 1", nama: "Paguling", nip: "198004032006041012" },
+  { kelas: "10 TJKT 2", nama: "Nur Aidah", nip: "198608302011012028" },
+  { kelas: "10 TJKT 3", nama: "Rusliana alias", nip: "199105192023212028" },
+  { kelas: "10 TJKT 4", nama: "HASMAH", nip: "199512132025212094" },
+  { kelas: "10 ULP", nama: "Yulianti Wulan", nip: "199607062025212140" },
+  { kelas: "11 AKL 1", nama: "Suci Cahyati Amming", nip: "199104022025212028" },
+  { kelas: "11 AKL 2", nama: "Harani", nip: "198802062025212100" },
+  { kelas: "11 AKL 3", nama: "Rinal Utama Putra", nip: "199707212024211013" },
+  { kelas: "11 Kuliner 1", nama: "RUDI ADRIANSYAH", nip: "199405292025211017" },
+  { kelas: "11 Kuliner 2", nama: "RIZKI ALFI NUGRAHANI", nip: "199110062025212115" },
+  { kelas: "11 MPLB 1", nama: "Alpiati", nip: "199408262025212048" },
+  { kelas: "11 MPLB 2", nama: "SITI RAHMA", nip: "199701062025212104" },
+  { kelas: "11 MPLB 3", nama: "Muh. Husain", nip: "199810052025211081" },
+  { kelas: "11 PMS 1", nama: "MADINAH NUR FAJRI", nip: "200012042025212049" },
+  { kelas: "11 PMS 2", nama: "Hidzfar Thaha", nip: "197905232005021004" },
+  { kelas: "11 PMS 3", nama: "Merry P", nip: "197705032006042009" },
+  { kelas: "11 TJKT 1", nama: "Ribhatun Nikmah", nip: "198305112009012003" },
+  { kelas: "11 TJKT 2", nama: "Suci Sri Nur", nip: "199611242023212026" },
+  { kelas: "11 TJKT 3", nama: "Ernawati", nip: "197802102008032001" },
+  { kelas: "11 ULP", nama: "Amelia Rosmeri", nip: "199008252024212029" },
+  { kelas: "12 AKL 1", nama: "Sabriah", nip: "197303272005022003" },
+  { kelas: "12 AKL 2", nama: "Nurhikmah", nip: "197803082006042023" },
+  { kelas: "12 AKL 3", nama: "FITRIYANI MUIS", nip: "199602202024212037" },
+  { kelas: "12 AKL 4", nama: "Yuliani", nip: "197308172024212003" },
+  { kelas: "12 Kuliner 1", nama: "Wa Ode Hijriani", nip: "200004202025212069" },
+  { kelas: "12 Kuliner 2", nama: "Elfira Tangaran", nip: "199306202023212038" },
+  { kelas: "12 MPLB 1", nama: "Indriyani Abdul Hakim", nip: "199012152024212039" },
+  { kelas: "12 MPLB 2", nama: "SARCE", nip: "197609232022212010" },
+  { kelas: "12 MPLB 3", nama: "Muhammad Agus Ramlan", nip: "197908172022211016" },
+  { kelas: "12 MPLB 4", nama: "Fitriana", nip: "198506202022212050" },
+  { kelas: "12 PMS 1", nama: "FIRAWATI", nip: "199311172024212032" },
+  { kelas: "12 PMS 2", nama: "Risna Ibrahim", nip: "198405092024212020" },
+  { kelas: "12 PMS 3", nama: "AZKIYAH KUSNADI", nip: "199805282024212030" },
+  { kelas: "12 TJKT 1", nama: "ELMIRA", nip: "199709062025212023" },
+  { kelas: "12 TJKT 2", nama: "Ani Rachmawati Thamrin", nip: "197412152022212012" },
+  { kelas: "12 TJKT 3", nama: "USWA HAIRANI", nip: "199305232023212038" },
+  { kelas: "12 TJKT 4", nama: "Prianus Teri", nip: "198206052024211014" },
+  { kelas: "12 ULP", nama: "Alisa", nip: "199507062025212144" }
+];
+
+export const INITIAL_WALI_KELAS: Record<string, string> = INITIAL_WALI_KELAS_LIST.reduce((acc, curr) => {
+  acc[curr.kelas] = curr.nama;
+  return acc;
+}, {} as Record<string, string>);
+
