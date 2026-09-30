@@ -1016,6 +1016,12 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
       return;
     }
 
+    // Validasi Wajib Alasan Mutasi
+    if (!formKeluarData.alasanMutasi.trim()) {
+      setFormKeluarError('Alasan mutasi / keterangan keluar wajib diisi.');
+      return;
+    }
+
     // Validasi Wajib Upload Berkas untuk Mutasi Keluar
     const hasBerkas = !!selectedBerkasFile || !!formKeluarData.uploadBerkas.trim();
     if (!hasBerkas) {
@@ -2508,11 +2514,13 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
 
                   {/* 11. Alasan Mutasi */}
                   <div className="lg:col-span-2">
-                    <label className="block font-semibold text-slate-700 mb-1.5">
-                      Alasan Mutasi / Keterangan Keluar <span className="text-slate-400 font-normal">(Opsional)</span>
+                    <label className="block font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
+                      <span>Alasan Mutasi / Keterangan Keluar <span className="text-rose-500">*</span></span>
+                      <span className="text-[11px] text-rose-500 font-medium">(Wajib Diisi)</span>
                     </label>
                     <input
                       type="text"
+                      required
                       value={formKeluarData.alasanMutasi}
                       onChange={(e) => setFormKeluarData(prev => ({ ...prev, alasanMutasi: e.target.value }))}
                       placeholder="Contoh: Mengikuti kepindahan tugas orang tua / Mengundurkan diri..."
