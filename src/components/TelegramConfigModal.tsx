@@ -35,23 +35,45 @@ interface TelegramConfigModalProps {
 }
 
 // Helper untuk otomatis mengekstrak Chat ID atau Thread ID jika user menempel link t.me
-// Contoh link Telegram: https://t.me/c/4324462750/6/9
+// Contoh link Telegram: https://t.me/c/4324462750/6/9 atau https://web.telegram.org/a/#-1004324462750_6
 export function parseTelegramChatId(input: string): string {
+  if (!input) return '';
   const trimmed = input.trim();
   // Format https://t.me/c/4324462750/... -> Bot API chat_id = -1004324462750
   const match = trimmed.match(/t\.me\/c\/(\d+)/i);
   if (match && match[1]) {
     return `-100${match[1]}`;
   }
+  // Format https://web.telegram.org/a/#-1004324462750_6
+  const matchWeb = trimmed.match(/#(-?\d+)/i);
+  if (matchWeb && matchWeb[1]) {
+    const raw = matchWeb[1];
+    return raw.startsWith('-') ? raw : `-100${raw}`;
+  }
   return trimmed;
 }
 
 export function parseTelegramThreadId(input: string): string {
+  if (!input) return '';
   const trimmed = input.trim();
   // Format https://t.me/c/4324462750/6/9 atau https://t.me/c/4324462750/6 -> Thread ID = 6
-  const match = trimmed.match(/t\.me\/c\/\d+\/(\d+)/i);
-  if (match && match[1]) {
-    return match[1];
+  const matchC = trimmed.match(/t\.me\/c\/\d+\/(\d+)/i);
+  if (matchC && matchC[1]) {
+    return matchC[1];
+  }
+  // Format Telegram Web https://web.telegram.org/a/#-1004324462750_6
+  const matchWeb = trimmed.match(/#(-?\d+)_(\d+)/i);
+  if (matchWeb && matchWeb[2]) {
+    return matchWeb[2];
+  }
+  // Format https://t.me/username/6
+  const matchUser = trimmed.match(/t\.me\/[^/]+\/(\d+)/i);
+  if (matchUser && matchUser[1]) {
+    return matchUser[1];
+  }
+  const matchNum = trimmed.match(/^(\d+)$/);
+  if (matchNum && matchNum[1]) {
+    return matchNum[1];
   }
   return trimmed;
 }
@@ -120,6 +142,38 @@ export const TelegramConfigModal: React.FC<TelegramConfigModalProps> = ({
       setTestResult({
         success: false,
         message: err?.message || 'Gagal mengirim pesan tes. Periksa koneksi internet dan kredensial bot.',
+      });
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  const handleTestTopic = async (topicName: string, targetChatId?: string, threadId?: string) => {
+    const finalChatId = (targetChatId && targetChatId.trim()) || config.chatId.trim();
+    if (!config.botToken.trim() || !finalChatId) {
+      setTestResult({
+        success: false,
+        message: 'Mohon isi Bot Token dan Chat ID grup terlebih dahulu sebelum uji coba topik.',
+      });
+      return;
+    }
+    if (!threadId || !threadId.trim()) {
+      setTestResult({
+        success: false,
+        message: `Silakan isi Thread/Topik ID untuk topik ${topicName} terlebih dahulu.`,
+      });
+      return;
+    }
+
+    setIsTesting(true);
+    setTestResult(null);
+    try {
+      const res = await testTelegramConnection(config.botToken, finalChatId, threadId.trim());
+      setTestResult(res);
+    } catch (err: any) {
+      setTestResult({
+        success: false,
+        message: err?.message || `Gagal mengirim pesan uji coba ke topik ${topicName}.`,
       });
     } finally {
       setIsTesting(false);
@@ -406,9 +460,21 @@ export const TelegramConfigModal: React.FC<TelegramConfigModalProps> = ({
                       <span className="text-[10px] text-slate-500">Siswa Baru</span>
                     </div>
                     <div>
-                      <label className="block text-[11px] text-slate-600 mb-1 font-medium">
-                        Thread / Topik ID:
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-[11px] text-slate-600 font-medium">
+                          Thread / Topik ID:
+                        </label>
+                        {config.threadIdMutasiMasuk && (
+                          <button
+                            type="button"
+                            disabled={isTesting}
+                            onClick={() => handleTestTopic('Mutasi Masuk', config.chatIdMutasiMasuk || config.chatId, config.threadIdMutasiMasuk)}
+                            className="text-[10px] text-sky-600 hover:text-sky-800 font-bold underline cursor-pointer disabled:opacity-50"
+                          >
+                            Tes Topik Ini
+                          </button>
+                        )}
+                      </div>
                       <input
                         type="text"
                         value={config.threadIdMutasiMasuk || ''}
@@ -440,9 +506,21 @@ export const TelegramConfigModal: React.FC<TelegramConfigModalProps> = ({
                       <span className="text-[10px] text-slate-500">Siswa Pindah</span>
                     </div>
                     <div>
-                      <label className="block text-[11px] text-slate-600 mb-1 font-medium">
-                        Thread / Topik ID:
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-[11px] text-slate-600 font-medium">
+                          Thread / Topik ID:
+                        </label>
+                        {config.threadIdMutasiKeluar && (
+                          <button
+                            type="button"
+                            disabled={isTesting}
+                            onClick={() => handleTestTopic('Mutasi Keluar', config.chatIdMutasiKeluar || config.chatId, config.threadIdMutasiKeluar)}
+                            className="text-[10px] text-sky-600 hover:text-sky-800 font-bold underline cursor-pointer disabled:opacity-50"
+                          >
+                            Tes Topik Ini
+                          </button>
+                        )}
+                      </div>
                       <input
                         type="text"
                         value={config.threadIdMutasiKeluar || ''}
