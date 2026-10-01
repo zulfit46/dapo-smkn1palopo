@@ -8,7 +8,6 @@ import {
   Search, 
   X, 
   Check, 
-  FileText, 
   FileCheck, 
   GraduationCap, 
   School, 
@@ -25,7 +24,6 @@ import {
   ChevronDown
 } from 'lucide-react';
 import jsPDF from 'jspdf';
-import { downloadSuratWord } from '../utils/exportWord';
 
 interface SuratViewProps {
   students: Student[];
@@ -456,47 +454,6 @@ export const SuratView: React.FC<SuratViewProps> = ({
     }
   };
 
-  // State & Handler Download Word (.docx)
-  const [isExportingWord, setIsExportingWord] = useState(false);
-
-  const handleDownloadWord = async () => {
-    try {
-      setIsExportingWord(true);
-      await downloadSuratWord({
-        jenisSurat,
-        nomorSurat: jenisSurat === 'pindah' ? nomorSuratPindah : nomorSuratKet,
-        tanggalSurat,
-        namaKepsek,
-        pangkatKepsek,
-        nipKepsek,
-        jabatanKepsek,
-        unitKerjaKepsek,
-        studentNama,
-        studentJK,
-        studentTTL,
-        studentNISN,
-        studentNIPD,
-        studentAgama,
-        studentAyah,
-        studentIbu,
-        programKeahlian,
-        konsentrasiKeahlian,
-        sekarangKelas,
-        sekolahTujuan,
-        customAlamat,
-        pekerjaanOrtu,
-        nisSiswa,
-        kelasJurusanKet,
-        tahunPelajaran,
-        keperluanSurat
-      });
-    } catch (err) {
-      console.error('Gagal download format Word:', err);
-    } finally {
-      setIsExportingWord(false);
-    }
-  };
-
   return (
     <div className="space-y-6 animate-fadeIn pb-16">
       {/* Print Specific CSS */}
@@ -537,7 +494,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
                 Layanan Surat Peserta Didik
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Cetak & download Surat Keterangan Pindah dan Surat Keterangan Siswa resmi (PDF & Word .docx)
+                Cetak & download Surat Keterangan Pindah dan Surat Keterangan Siswa resmi (PDF & Siap Cetak)
               </p>
             </div>
           </div>
@@ -942,8 +899,8 @@ export const SuratView: React.FC<SuratViewProps> = ({
             </label>
           </div>
 
-          {/* Action Buttons: Cetak, Download PDF, Download Word */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+          {/* Action Buttons: Cetak & Download PDF */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
             <button
               type="button"
               onClick={handlePrint}
@@ -962,16 +919,6 @@ export const SuratView: React.FC<SuratViewProps> = ({
               <Download className="w-4 h-4" />
               <span>Download PDF</span>
             </button>
-            <button
-              type="button"
-              onClick={handleDownloadWord}
-              disabled={isExportingWord}
-              className="py-3 px-3 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/25 transition-all cursor-pointer disabled:opacity-60"
-              title="Download Format Word (.docx) yang Dapat Diedit"
-            >
-              <FileText className="w-4 h-4" />
-              <span>{isExportingWord ? 'Memproses...' : 'Download Word'}</span>
-            </button>
           </div>
         </div>
 
@@ -984,16 +931,6 @@ export const SuratView: React.FC<SuratViewProps> = ({
               <span className="font-semibold text-slate-700">Pratinjau Kertas A4 (Live Preview)</span>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleDownloadWord}
-                disabled={isExportingWord}
-                className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs flex items-center gap-1.5 border border-blue-200 transition-colors cursor-pointer"
-                title="Unduh Format Word (.docx)"
-              >
-                <FileText className="w-3.5 h-3.5 text-blue-600" />
-                <span>{isExportingWord ? 'Menyiapkan...' : 'Format Word'}</span>
-              </button>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
