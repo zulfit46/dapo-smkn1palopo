@@ -100,6 +100,16 @@ export const SuratView: React.FC<SuratViewProps> = ({
   // Preview Zoom state
   const [zoomLevel, setZoomLevel] = useState<number>(100);
 
+  // Font Dokumen Surat
+  type PilihanFont = 'Calibri' | 'Times New Roman' | 'Arial';
+  const [selectedFont, setSelectedFont] = useState<PilihanFont>('Calibri');
+
+  const getFontFamilyStyle = () => {
+    if (selectedFont === 'Times New Roman') return "'Times New Roman', Times, serif";
+    if (selectedFont === 'Arial') return "Arial, Helvetica, sans-serif";
+    return "'Calibri', 'Segoe UI', Arial, sans-serif";
+  };
+
   const matchedJurusan = useMemo(() => {
     if (!selectedStudent?.kelas) return null;
     return getJurusanByKelas(selectedStudent.kelas, jurusanList);
@@ -195,6 +205,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
 
     const pageWidth = doc.internal.pageSize.getWidth();
     const marginX = 20;
+    const pdfFont = selectedFont === 'Times New Roman' ? 'times' : 'helvetica';
 
     // 1. Kop Surat
     try {
@@ -204,26 +215,26 @@ export const SuratView: React.FC<SuratViewProps> = ({
     }
 
     if (jenisSurat === 'ket-siswa') {
-      doc.setFont('helvetica', 'bold');
+      doc.setFont(pdfFont, 'bold');
       doc.setFontSize(11);
       doc.text('PEMERINTAH PROVINSI SULAWESI SELATAN', pageWidth / 2, 14, { align: 'center' });
       doc.text('DINAS PENDIDIKAN', pageWidth / 2, 19, { align: 'center' });
       doc.setFontSize(12.5);
       doc.text('UPT-SMK NEG. 1 PALOPO', pageWidth / 2, 24.5, { align: 'center' });
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(pdfFont, 'normal');
       doc.setFontSize(7.8);
       doc.text('Jln.K.H.M. Kasim No.10 Telp.(0471) 3200930, Kelurahan Pattene, Kota Palopo', pageWidth / 2, 29, { align: 'center' });
       doc.text('Website : http://smknegeri1palopo.sch.id Email : info@smknegeri1palopo.sch.id', pageWidth / 2, 32.5, { align: 'center' });
     } else {
-      doc.setFont('helvetica', 'bold');
+      doc.setFont(pdfFont, 'bold');
       doc.setFontSize(11);
       doc.text('PEMERINTAH PROVINSI SULAWESI SELATAN', pageWidth / 2, 14, { align: 'center' });
       doc.text('DINAS PENDIDIKAN', pageWidth / 2, 19, { align: 'center' });
       doc.setFontSize(12);
       doc.text('SEKOLAH MENENGAH KEJURUAN NEGERI 1 PALOPO', pageWidth / 2, 24.5, { align: 'center' });
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(pdfFont, 'normal');
       doc.setFontSize(8);
       doc.text('Jl. KHM. Kasim NO. 10 Kota Palopo Sulawesi Selatan', pageWidth / 2, 29, { align: 'center' });
       doc.text('Website : http://www.smkn1-palopo.sch.id E.mail: info@smknegeri1palopo.sch.id', pageWidth / 2, 32.5, { align: 'center' });
@@ -237,7 +248,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
 
     if (jenisSurat === 'pindah') {
       // SURAT KETERANGAN PINDAH
-      doc.setFont('helvetica', 'bold');
+      doc.setFont(pdfFont, 'bold');
       doc.setFontSize(12);
       const titleY = 43;
       doc.text('SURAT KETERANGAN PINDAH', pageWidth / 2, titleY, { align: 'center' });
@@ -246,7 +257,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
       doc.setLineWidth(0.3);
       doc.line((pageWidth - titleWidth) / 2, titleY + 0.8, (pageWidth + titleWidth) / 2, titleY + 0.8);
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(pdfFont, 'normal');
       doc.setFontSize(9.5);
       doc.text(`Nomor : ${nomorSuratPindah}`, pageWidth / 2, titleY + 5.5, { align: 'center' });
 
@@ -285,7 +296,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
       ];
 
       items.forEach((item) => {
-        doc.setFont('helvetica', 'normal');
+        doc.setFont(pdfFont, 'normal');
         doc.text(item.no, numX, currY);
         doc.text(item.label, labelX, currY);
         doc.text(':', colonX, currY);
@@ -307,9 +318,9 @@ export const SuratView: React.FC<SuratViewProps> = ({
             currY += (splitText.length - 1) * 4.2;
           }
         } else {
-          if (item.isBold) doc.setFont('helvetica', 'bold');
+          if (item.isBold) doc.setFont(pdfFont, 'bold');
           doc.text(item.value || '-', valueX, currY);
-          if (item.isBold) doc.setFont('helvetica', 'normal');
+          if (item.isBold) doc.setFont(pdfFont, 'normal');
         }
         currY += lineH;
       });
@@ -322,14 +333,14 @@ export const SuratView: React.FC<SuratViewProps> = ({
       currY += splitTransfer.length * 4.5 + 3;
 
       // Warning text in italic
-      doc.setFont('helvetica', 'italic');
+      doc.setFont(pdfFont, 'italic');
       const warningText = 'Dengan dikeluarkannya surat keterangan ini, siswa tersebut diatas tidak diperkenankan masuk kembali. Dengan mempergunakan surat pindah tersebut.';
       const splitWarning = doc.splitTextToSize(warningText, pageWidth - (marginX * 2) - 8);
       doc.text(splitWarning, marginX + 6, currY);
       currY += splitWarning.length * 4.5 + 4;
 
       // Closing text
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(pdfFont, 'normal');
       const closingText = 'Demikian Surat Keterangan ini kami berikan kepada yang bersangkutan untuk dipergunakan seperlunya.';
       const splitClosing = doc.splitTextToSize(closingText, pageWidth - (marginX * 2));
       doc.text(splitClosing, marginX, currY);
@@ -344,13 +355,13 @@ export const SuratView: React.FC<SuratViewProps> = ({
 
       // Signature spacing / Stamp
       currY += 22;
-      doc.setFont('helvetica', 'bold');
+      doc.setFont(pdfFont, 'bold');
       doc.text(namaKepsek, ttdX, currY);
       const nameWidth = doc.getTextWidth(namaKepsek);
       doc.line(ttdX, currY + 0.6, ttdX + nameWidth, currY + 0.6);
 
       currY += 4.5;
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(pdfFont, 'normal');
       doc.text(`Pangkat : ${pangkatKepsek}`, ttdX, currY);
       currY += 4.5;
       doc.text(`NIP: ${nipKepsek}`, ttdX, currY);
@@ -358,7 +369,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
       doc.save(`Surat_Keterangan_Pindah_${studentNama.replace(/\s+/g, '_')}_${studentNISN}.pdf`);
     } else {
       // SURAT KETERANGAN SISWA (SESUAI DOKUMEN RESMI)
-      doc.setFont('helvetica', 'bold');
+      doc.setFont(pdfFont, 'bold');
       doc.setFontSize(13);
       const titleY = 44;
       doc.text('SURAT KETERANGAN', pageWidth / 2, titleY, { align: 'center' });
@@ -366,7 +377,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
       doc.setLineWidth(0.35);
       doc.line((pageWidth - titleWidth) / 2, titleY + 0.8, (pageWidth + titleWidth) / 2, titleY + 0.8);
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(pdfFont, 'normal');
       doc.setFontSize(10);
       doc.text(`Nomor : ${nomorSuratKet}`, pageWidth / 2, titleY + 5.5, { align: 'center' });
 
@@ -410,9 +421,9 @@ export const SuratView: React.FC<SuratViewProps> = ({
       siswaItems.forEach((item) => {
         doc.text(item.label, labelX, currY);
         doc.text(':', colonX, currY);
-        if (item.isBold) doc.setFont('helvetica', 'bold');
+        if (item.isBold) doc.setFont(pdfFont, 'bold');
         doc.text(item.value, valueX, currY);
-        if (item.isBold) doc.setFont('helvetica', 'normal');
+        if (item.isBold) doc.setFont(pdfFont, 'normal');
         currY += lineH;
       });
 
@@ -438,14 +449,14 @@ export const SuratView: React.FC<SuratViewProps> = ({
       doc.text(jabatanKepsek + ',', ttdX, currY);
 
       currY += 24;
-      doc.setFont('helvetica', 'bold');
+      doc.setFont(pdfFont, 'bold');
       doc.text(namaKepsek, ttdX, currY);
       const nameWidth = doc.getTextWidth(namaKepsek);
       doc.setLineWidth(0.3);
       doc.line(ttdX, currY + 0.6, ttdX + nameWidth, currY + 0.6);
 
       currY += 4.8;
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(pdfFont, 'normal');
       doc.text(`Pangkat : ${pangkatKepsek.split(',')[0].trim()}`, ttdX, currY);
       currY += 4.8;
       doc.text(`NIP. ${formatNIP(nipKepsek)}`, ttdX, currY);
@@ -897,6 +908,22 @@ export const SuratView: React.FC<SuratViewProps> = ({
                 Sertakan Cap Stempel Resmi & Tanda Tangan Digital
               </span>
             </label>
+
+            {/* Pilihan Jenis Font Surat */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                <span>🔤</span> Jenis Font Surat:
+              </label>
+              <select
+                value={selectedFont}
+                onChange={(e) => setSelectedFont(e.target.value as PilihanFont)}
+                className="px-2.5 py-1 text-xs bg-slate-50 border border-slate-300 rounded-lg font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              >
+                <option value="Calibri">Calibri (Standar Modern)</option>
+                <option value="Times New Roman">Times New Roman (Klasik Resmi)</option>
+                <option value="Arial">Arial (Tegas & Rapi)</option>
+              </select>
+            </div>
           </div>
 
           {/* Action Buttons: Cetak & Download PDF */}
@@ -970,8 +997,8 @@ export const SuratView: React.FC<SuratViewProps> = ({
             {/* Real Official A4 Sheet */}
             <div 
               id="surat-print-container"
-              className="bg-white text-black shadow-2xl rounded-sm w-[210mm] min-h-[297mm] p-[18mm] sm:p-[20mm] font-['Calibri',sans-serif] text-[12pt] leading-[1.5] select-text relative border border-slate-200"
-              style={{ boxSizing: 'border-box' }}
+              className="bg-white text-black shadow-2xl rounded-sm w-[210mm] min-h-[297mm] p-[18mm] sm:p-[20mm] text-[12pt] leading-[1.5] select-text relative border border-slate-200"
+              style={{ boxSizing: 'border-box', fontFamily: getFontFamilyStyle() }}
             >
               {/* 1. KOP SURAT (TETAP TEPAT DI TENGAH KERTAS WALAU ADA LOGO DI KIRI) */}
               <div className="relative pb-3 min-h-[90px] flex items-center justify-center">
@@ -986,38 +1013,38 @@ export const SuratView: React.FC<SuratViewProps> = ({
 
                 {/* Header Text - Benar-benar di tengah kertas (Full Width text-center) */}
                 {jenisSurat === 'ket-siswa' ? (
-                  <div className="w-full text-center font-sans text-slate-950 px-20">
-                    <h3 className="text-[13pt] font-bold tracking-tight uppercase leading-tight font-sans">
+                  <div className="w-full text-center text-slate-950 px-20">
+                    <h3 className="text-[13pt] font-bold tracking-tight uppercase leading-tight">
                       PEMERINTAH PROVINSI SULAWESI SELATAN
                     </h3>
-                    <h2 className="text-[13pt] font-bold tracking-tight uppercase leading-tight font-sans">
+                    <h2 className="text-[13pt] font-bold tracking-tight uppercase leading-tight">
                       DINAS PENDIDIKAN
                     </h2>
-                    <h1 className="text-[14.5pt] font-black tracking-tight uppercase leading-tight font-sans mt-0.5">
+                    <h1 className="text-[14.5pt] font-black tracking-tight uppercase leading-tight mt-0.5">
                       UPT-SMK NEG. 1 PALOPO
                     </h1>
-                    <p className="text-[8.5pt] font-normal font-sans leading-tight mt-1 text-slate-900">
+                    <p className="text-[8.5pt] font-normal leading-tight mt-1 text-slate-900">
                       Jln.K.H.M. Kasim No.10 Telp.(0471) 3200930, Kelurahan Pattene, Kota Palopo
                     </p>
-                    <p className="text-[8pt] font-normal font-sans leading-tight text-slate-800">
+                    <p className="text-[8pt] font-normal leading-tight text-slate-800">
                       Website : <span className="underline text-blue-700">http://smknegeri1palopo.sch.id</span> Email : <span className="underline text-blue-700">info@smknegeri1palopo.sch.id</span>
                     </p>
                   </div>
                 ) : (
-                  <div className="w-full text-center font-sans text-slate-950 px-20">
-                    <h3 className="text-[13pt] font-bold tracking-tight uppercase leading-tight font-sans">
+                  <div className="w-full text-center text-slate-950 px-20">
+                    <h3 className="text-[13pt] font-bold tracking-tight uppercase leading-tight">
                       PEMERINTAH PROVINSI SULAWESI SELATAN
                     </h3>
-                    <h2 className="text-[13pt] font-bold tracking-tight uppercase leading-tight font-sans">
+                    <h2 className="text-[13pt] font-bold tracking-tight uppercase leading-tight">
                       DINAS PENDIDIKAN
                     </h2>
-                    <h1 className="text-[14pt] font-black tracking-tight uppercase leading-tight font-sans mt-0.5">
+                    <h1 className="text-[14pt] font-black tracking-tight uppercase leading-tight mt-0.5">
                       SEKOLAH MENENGAH KEJURUAN NEGERI 1 PALOPO
                     </h1>
-                    <p className="text-[8.5pt] font-normal font-sans leading-tight mt-1 text-slate-900">
+                    <p className="text-[8.5pt] font-normal leading-tight mt-1 text-slate-900">
                       Jl. KHM. Kasim NO. 10 Kota Palopo Sulawesi Selatan
                     </p>
-                    <p className="text-[8pt] font-normal font-sans leading-tight text-slate-800">
+                    <p className="text-[8pt] font-normal leading-tight text-slate-800">
                       Website : http://www.smkn1-palopo.sch.id E.mail: info@smknegeri1palopo.sch.id
                     </p>
                   </div>
@@ -1031,13 +1058,13 @@ export const SuratView: React.FC<SuratViewProps> = ({
               {/* 2. DOKUMEN ISI */}
               {jenisSurat === 'pindah' ? (
                 /* ================= SURAT KETERANGAN PINDAH ================= */
-                <div className="text-[12pt] text-black leading-[1.5] space-y-4 pt-2 font-['Calibri',sans-serif]">
+                <div className="text-[12pt] text-black leading-[1.5] space-y-4 pt-2">
                   {/* Judul & Nomor */}
                   <div className="text-center space-y-1">
-                    <h2 className="text-[14pt] font-bold uppercase underline tracking-wider font-['Calibri',sans-serif]">
+                    <h2 className="text-[14pt] font-bold uppercase underline tracking-wider">
                       SURAT KETERANGAN PINDAH
                     </h2>
-                    <p className="text-[12pt] font-['Calibri',sans-serif]">
+                    <p className="text-[12pt]">
                       Nomor : {nomorSuratPindah}
                     </p>
                   </div>
@@ -1048,7 +1075,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
                   </p>
 
                   {/* 12 Poin Siswa Sesuai Foto */}
-                  <div className="space-y-1 pl-2 text-[12pt] font-['Calibri',sans-serif] leading-[1.5]">
+                  <div className="space-y-1 pl-2 text-[12pt] leading-[1.5]">
                     {/* 1. Nama */}
                     <div className="flex">
                       <span className="w-6 shrink-0">1.</span>
@@ -1110,7 +1137,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
                       <span className="w-6 shrink-0">8.</span>
                       <span className="w-48 shrink-0">NISN</span>
                       <span className="w-4 shrink-0">:</span>
-                      <span className="flex-1 font-mono">{studentNISN}</span>
+                      <span className="flex-1">{studentNISN}</span>
                     </div>
 
                     {/* 9. Sekarang duduk dikelas */}
@@ -1163,7 +1190,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
                   </p>
 
                   {/* Paragraf Peringatan / Italic Sesuai Foto */}
-                  <p className="text-justify italic pl-8 pr-4 font-['Calibri',sans-serif] text-[12pt] leading-[1.5]">
+                  <p className="text-justify italic pl-8 pr-4 text-[12pt] leading-[1.5]">
                     Dengan dikeluarkannya surat keterangan ini, siswa tersebut diatas tidak diperkenankan
                     masuk kembali. Dengan mempergunakan surat pindah tersebut.
                   </p>
@@ -1175,7 +1202,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
 
                   {/* Tanda Tangan & Cap Resmi */}
                   <div className="pt-4 flex justify-end">
-                    <div className="w-64 text-left font-['Calibri',sans-serif] text-[12pt] leading-[1.5] relative">
+                    <div className="w-64 text-left text-[12pt] leading-[1.5] relative">
                       <p>Palopo, {formatIndonesianDate(tanggalSurat)}</p>
                       <p className="font-medium">{jabatanKepsek},</p>
 
@@ -1218,30 +1245,30 @@ export const SuratView: React.FC<SuratViewProps> = ({
                       {/* Info Nama & NIP */}
                       <p className="font-bold underline text-[12pt]">{namaKepsek}</p>
                       <p className="text-[12pt] text-slate-800">Pangkat : {pangkatKepsek}</p>
-                      <p className="text-[12pt] text-slate-800 font-mono">NIP: {nipKepsek}</p>
+                      <p className="text-[12pt] text-slate-800">NIP: {nipKepsek}</p>
                     </div>
                   </div>
                 </div>
               ) : (
                 /* ================= SURAT KETERANGAN SISWA (FORMAT RESMI) ================= */
-                <div className="text-[12pt] text-black leading-[1.5] space-y-4 pt-2 font-['Calibri',sans-serif]">
+                <div className="text-[12pt] text-black leading-[1.5] space-y-4 pt-2">
                   {/* Judul & Nomor */}
                   <div className="text-center space-y-1">
-                    <h2 className="text-[14pt] font-bold uppercase underline tracking-wider font-['Calibri',sans-serif]">
+                    <h2 className="text-[14pt] font-bold uppercase underline tracking-wider">
                       SURAT KETERANGAN
                     </h2>
-                    <p className="text-[12pt] font-['Calibri',sans-serif] font-medium">
+                    <p className="text-[12pt] font-medium">
                       Nomor : {nomorSuratKet}
                     </p>
                   </div>
 
                   {/* Paragraf Pembuka */}
-                  <p className="pt-3 text-justify font-['Calibri',sans-serif] leading-[1.5]">
+                  <p className="pt-3 text-justify leading-[1.5]">
                     Yang bertanda tangan di bawah ini :
                   </p>
 
                   {/* Identitas Pejabat */}
-                  <div className="space-y-1.5 pl-6 text-[12pt] font-['Calibri',sans-serif] leading-[1.5]">
+                  <div className="space-y-1.5 pl-6 text-[12pt] leading-[1.5]">
                     <div className="flex">
                       <span className="w-36 shrink-0">Nama</span>
                       <span className="w-4 shrink-0">:</span>
@@ -1255,7 +1282,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
                     <div className="flex">
                       <span className="w-36 shrink-0">NIP</span>
                       <span className="w-4 shrink-0">:</span>
-                      <span className="flex-1 font-mono">{nipKepsek}</span>
+                      <span className="flex-1">{nipKepsek}</span>
                     </div>
                     <div className="flex">
                       <span className="w-36 shrink-0">Jabatan</span>
@@ -1270,12 +1297,12 @@ export const SuratView: React.FC<SuratViewProps> = ({
                   </div>
 
                   {/* Menerangkan bahwa : */}
-                  <p className="pt-2 text-justify font-sans">
+                  <p className="pt-2 text-justify leading-[1.5]">
                     Menerangkan bahwa :
                   </p>
 
                   {/* Identitas Siswa */}
-                  <div className="space-y-1.5 pl-6 text-[12pt] font-['Calibri',sans-serif] leading-[1.5]">
+                  <div className="space-y-1.5 pl-6 text-[12pt] leading-[1.5]">
                     <div className="flex">
                       <span className="w-36 shrink-0">Nama</span>
                       <span className="w-4 shrink-0">:</span>
@@ -1294,19 +1321,19 @@ export const SuratView: React.FC<SuratViewProps> = ({
                   </div>
 
                   {/* Paragraf Pernyataan */}
-                  <p className="pt-3 text-justify font-['Calibri',sans-serif] leading-[1.5]">
+                  <p className="pt-3 text-justify leading-[1.5]">
                     Benar adalah siswa pada SMK Negeri 1 Palopo Tahun Pelajaran {tahunPelajaran}.
                     {keperluanSurat && keperluanSurat.trim() ? ` Surat Keterangan ini dibuat untuk keperluan ${keperluanSurat.trim()}.` : ''}
                   </p>
 
                   {/* Paragraf Penutup */}
-                  <p className="pt-1 text-justify font-['Calibri',sans-serif] leading-[1.5]">
+                  <p className="pt-1 text-justify leading-[1.5]">
                     Demikian Surat Keterangan ini dibuat untuk dipergunakan sebagaimana mestinya.
                   </p>
 
                   {/* Tanda Tangan & Cap Resmi */}
                   <div className="pt-8 flex justify-end">
-                    <div className="w-72 text-left font-['Calibri',sans-serif] text-[12pt] leading-[1.5] relative">
+                    <div className="w-72 text-left text-[12pt] leading-[1.5] relative">
                       <p>Palopo, {formatIndonesianDate(tanggalSurat)}</p>
                       <p className="font-medium">{jabatanKepsek},</p>
 
