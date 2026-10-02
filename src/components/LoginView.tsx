@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { GTKData } from '../types';
 import { DAPO1_BASE64 } from '../assets/dapo1Base64';
+import bgImage from '../assets/bg.png';
 import { 
   LogIn, 
   User, 
@@ -71,7 +72,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ gtkList, onLogin }) => {
     <div className="min-h-screen relative flex items-center justify-center p-4 sm:p-6 antialiased overflow-hidden bg-slate-950">
       {/* Background Image: Fit/Fill whole viewport completely without cropping */}
       <img
-        src="/bg.png"
+        src={bgImage || "/bg.png"}
         alt="Background Form Login SMKN 1 Palopo"
         className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none"
       />
