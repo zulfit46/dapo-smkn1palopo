@@ -905,10 +905,10 @@ export const SuratView: React.FC<SuratViewProps> = ({
                 <Type className="w-4 h-4 text-indigo-600" />
                 <span>Isian Data Surat Siswa</span>
               </div>
-              <span className="text-[10.5px] text-slate-500 flex items-center gap-1 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-lg font-medium">
+              {/* <span className="text-[10.5px] text-slate-500 flex items-center gap-1 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-lg font-medium">
                 <Lock className="w-3 h-3 text-slate-400" />
                 <span>Format Diatur Admin</span>
-              </span>
+              </span>*/}
             </div>
           )}
 
