@@ -1200,7 +1200,7 @@ export const RekapView: React.FC<RekapViewProps> = ({
                       </tbody>
                       <tfoot>
                         <tr className="font-bold text-slate-900 border-t-2 border-slate-200 bg-slate-50/80">
-                          <td colSpan={2} className="py-3 px-3">Jumlah </td> {/* //{levelItem.level}</td>*/}
+                          <td colSpan={2} className="py-3 px-3">Jumlah </td>
                           <td className="py-3 px-3 text-center">{levelItem.totalLaki}</td>
                           <td className="py-3 px-3 text-center">{levelItem.totalPerempuan}</td>
                           <td className="py-3 px-3 text-center text-blue-600">{levelItem.total}</td>
