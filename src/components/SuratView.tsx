@@ -34,9 +34,11 @@ import {
   Minus,
   Palette,
   Save,
-  Space
+  Space,
+  Lock
 } from 'lucide-react';
 import jsPDF from 'jspdf';
+import { isAdminRole, isUserRole } from '../utils/authUtils';
 
 interface SuratViewProps {
   students: Student[];
@@ -74,6 +76,9 @@ export const SuratView: React.FC<SuratViewProps> = ({
   waliKelasList = [],
   jurusanList = INITIAL_JURUSAN_LIST
 }) => {
+  // Hanya role Admin yang dapat mengakses pengaturan surat, spasi, dan format mandiri
+  const isAdmin = Boolean(currentUser ? isAdminRole(currentUser) : true);
+
   const [jenisSurat, setJenisSurat] = useState<JenisSurat>('pindah');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(() => {
@@ -94,7 +99,6 @@ export const SuratView: React.FC<SuratViewProps> = ({
   const [nipKepsek, setNipKepsek] = useState('197003032007011032');
   const [jabatanKepsek, setJabatanKepsek] = useState('Kepala Sekolah');
   const [unitKerjaKepsek, setUnitKerjaKepsek] = useState('SMK Negeri 1 Palopo');
-  const [showSignatureStamp, setShowSignatureStamp] = useState(true);
 
   // Field Spesifik Surat Pindah
   const [sekolahTujuan, setSekolahTujuan] = useState('SMA NEGERI 4 PALOPO');
@@ -160,12 +164,28 @@ export const SuratView: React.FC<SuratViewProps> = ({
   const [resetKey, setResetKey] = useState<number>(0);
   const [isSavedToast, setIsSavedToast] = useState<boolean>(false);
 
-  // Deteksi Seleksi Teks Mandiri di Kertas A4
+  // Deteksi Seleksi Teks Mandiri di Kertas A4 (Hanya aktif untuk Admin)
   const [selectedWordText, setSelectedWordText] = useState<string>('');
   const [hasTextSelection, setHasTextSelection] = useState<boolean>(false);
 
+  // Jika bukan Admin, pastikan tab setting mandiri & live edit otomatis dimatikan
+  React.useEffect(() => {
+    if (!isAdmin) {
+      if (activeSettingsTab === 'layout') setActiveSettingsTab('data');
+      if (isLiveEditMode) setIsLiveEditMode(false);
+      setHasTextSelection(false);
+      setSelectedWordText('');
+    }
+  }, [isAdmin, activeSettingsTab, isLiveEditMode]);
+
   React.useEffect(() => {
     const handleSelection = () => {
+      // Pengaturan format teks kata mandiri hanya untuk Admin
+      if (!isAdmin) {
+        setSelectedWordText('');
+        setHasTextSelection(false);
+        return;
+      }
       const sel = window.getSelection();
       if (!sel || sel.isCollapsed || sel.rangeCount === 0) {
         setSelectedWordText('');
@@ -187,7 +207,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
     return () => {
       document.removeEventListener('selectionchange', handleSelection);
     };
-  }, []);
+  }, [isAdmin]);
 
   const getFontFamilyStyle = () => {
     if (selectedFont === 'Times New Roman') return "'Times New Roman', Times, serif";
@@ -847,33 +867,50 @@ export const SuratView: React.FC<SuratViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* LEFT COLUMN: Controls & Input Form (5 cols on lg) */}
         <div className="no-print lg:col-span-5 space-y-4">
-          {/* Sub-Navigation Tabs: Data Surat vs Spasi & Tata Letak */}
-          <div className="bg-white p-1.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => setActiveSettingsTab('data')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                activeSettingsTab === 'data'
-                  ? 'bg-indigo-600 text-white shadow-xs shadow-indigo-600/25'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-              }`}
-            >
-              <Type className="w-3.5 h-3.5" />
-              <span>Data Surat</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveSettingsTab('layout')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                activeSettingsTab === 'layout'
-                  ? 'bg-indigo-600 text-white shadow-xs shadow-indigo-600/25'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-              }`}
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              <span>Spasi & Tata Letak</span>
-            </button>
-          </div>
+          {/* Sub-Navigation Tabs: Data Surat vs Spasi & Tata Letak (Hanya Admin) */}
+          {isAdmin ? (
+            <div className="bg-white p-1.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setActiveSettingsTab('data')}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  activeSettingsTab === 'data'
+                    ? 'bg-indigo-600 text-white shadow-xs shadow-indigo-600/25'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <Type className="w-3.5 h-3.5" />
+                <span>Data Surat</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSettingsTab('layout')}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeSettingsTab === 'layout'
+                    ? 'bg-indigo-600 text-white shadow-xs shadow-indigo-600/25'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+                title="Khusus Administrator: Atur spasi per bagian & ukuran font surat"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                <span>Pengaturan Format</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 font-black uppercase tracking-wider">
+                  Admin
+                </span>
+              </button>
+            </div>
+          ) : (
+            <div className="bg-white p-2.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 font-bold text-slate-800">
+                <Type className="w-4 h-4 text-indigo-600" />
+                <span>Isian Data Surat Siswa</span>
+              </div>
+              <span className="text-[10.5px] text-slate-500 flex items-center gap-1 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-lg font-medium">
+                <Lock className="w-3 h-3 text-slate-400" />
+                <span>Format Diatur Admin</span>
+              </span>
+            </div>
+          )}
 
           {activeSettingsTab === 'data' ? (
             <div className="space-y-4">
@@ -1175,7 +1212,7 @@ export const SuratView: React.FC<SuratViewProps> = ({
             </div>
           </div>
 
-          {/* 3. Penandatangan (Kepala Sekolah) & Digital Stamp */}
+          {/* 3. Penandatangan (Kepala Sekolah) & Pilihan Font */}
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-5 space-y-3 text-xs">
             <div className="font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
               <span>Penandatangan (Kepala Sekolah)</span>
@@ -1184,68 +1221,56 @@ export const SuratView: React.FC<SuratViewProps> = ({
 
             <div className="grid grid-cols-2 gap-2">
               <div className="col-span-2">
-                <label className="block text-[11px] text-slate-600 mb-0.5">Nama Lengkap & Gelar:</label>
+                <label className="block text-[11px] text-slate-600 mb-0.5 font-bold">Nama Lengkap & Gelar:</label>
                 <input
                   type="text"
                   value={namaKepsek}
                   onChange={(e) => setNamaKepsek(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl font-bold text-xs"
+                  className="w-full px-3 py-1.5 border border-slate-300 rounded-xl font-bold text-xs bg-slate-50 focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-[11px] text-slate-600 mb-0.5">Pangkat / Golongan:</label>
+                <label className="block text-[11px] text-slate-600 mb-0.5 font-bold">Pangkat / Golongan:</label>
                 <input
                   type="text"
                   value={pangkatKepsek}
                   onChange={(e) => setPangkatKepsek(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs"
+                  className="w-full px-3 py-1.5 border border-slate-300 rounded-xl text-xs bg-slate-50 focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-[11px] text-slate-600 mb-0.5">NIP:</label>
+                <label className="block text-[11px] text-slate-600 mb-0.5 font-bold">NIP:</label>
                 <input
                   type="text"
                   value={nipKepsek}
                   onChange={(e) => setNipKepsek(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl font-mono text-xs"
+                  className="w-full px-3 py-1.5 border border-slate-300 rounded-xl font-mono text-xs bg-slate-50 focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-[11px] text-slate-600 mb-0.5">Jabatan:</label>
+                <label className="block text-[11px] text-slate-600 mb-0.5 font-bold">Jabatan:</label>
                 <input
                   type="text"
                   value={jabatanKepsek}
                   onChange={(e) => setJabatanKepsek(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs"
+                  className="w-full px-3 py-1.5 border border-slate-300 rounded-xl text-xs bg-slate-50 focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-[11px] text-slate-600 mb-0.5">Unit Kerja:</label>
+                <label className="block text-[11px] text-slate-600 mb-0.5 font-bold">Unit Kerja:</label>
                 <input
                   type="text"
                   value={unitKerjaKepsek}
                   onChange={(e) => setUnitKerjaKepsek(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs"
+                  className="w-full px-3 py-1.5 border border-slate-300 rounded-xl text-xs bg-slate-50 focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
             </div>
 
-            <label className="flex items-center gap-2 pt-2 border-t border-slate-100 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={showSignatureStamp}
-                onChange={(e) => setShowSignatureStamp(e.target.checked)}
-                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
-              />
-              <span className="text-slate-700 text-xs font-semibold">
-                Sertakan Cap Stempel Resmi & Tanda Tangan Digital
-              </span>
-            </label>
-
-            {/* Pilihan Jenis Font Surat */}
+            {/* Pilihan Jenis Font Surat (Dapat diakses oleh User dan Admin) */}
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
               <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
-                <span>🔤</span> Jenis Font Surat:
+                <span>🔤</span> Jenis Font Dokumen:
               </label>
               <select
                 value={selectedFont}
@@ -1458,10 +1483,10 @@ export const SuratView: React.FC<SuratViewProps> = ({
               />
             </div>
 
-            {/* H. Tinggi Ruang Tanda Tangan / Stempel */}
+            {/* H. Tinggi Ruang Tanda Tangan */}
             <div className="space-y-1 pt-1.5 border-t border-slate-50">
               <div className="flex items-center justify-between">
-                <span className="text-slate-600 font-medium">8. Tinggi Ruang Tanda Tangan / Cap:</span>
+                <span className="text-slate-600 font-medium">8. Tinggi Ruang Tanda Tangan:</span>
                 <span className="font-mono font-bold text-indigo-900 bg-slate-100 px-2 py-0.5 rounded text-[11px]">
                   {ttdHeight} px
                 </span>
@@ -1738,20 +1763,22 @@ export const SuratView: React.FC<SuratViewProps> = ({
               <span className="font-semibold text-slate-700">Pratinjau Kertas A4 (Live Preview)</span>
             </div>
             <div className="flex items-center gap-2">
-              {/* Tombol Mode Edit Teks Bebas */}
-              <button
-                type="button"
-                onClick={() => setIsLiveEditMode(!isLiveEditMode)}
-                className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
-                  isLiveEditMode
-                    ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/25 ring-2 ring-amber-300'
-                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300'
-                }`}
-                title="Bisa klik dan ketik kata/spasi secara bebas langsung di atas lembar kertas"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                <span>{isLiveEditMode ? 'Mode Edit Aktif' : 'Ketik Bebas di Lembar'}</span>
-              </button>
+              {/* Tombol Mode Edit Teks Bebas (Khusus Admin) */}
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setIsLiveEditMode(!isLiveEditMode)}
+                  className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                    isLiveEditMode
+                      ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/25 ring-2 ring-amber-300'
+                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300'
+                  }`}
+                  title="Khusus Administrator: Klik dan ketik kata/spasi secara bebas langsung di atas lembar kertas"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>{isLiveEditMode ? 'Mode Edit Aktif' : 'Ketik Bebas di Lembar'}</span>
+                </button>
+              )}
 
               <div className="flex items-center gap-1.5">
                 <button
@@ -1784,8 +1811,8 @@ export const SuratView: React.FC<SuratViewProps> = ({
             </div>
           </div>
 
-          {/* WYSIWYG Formatting Bar saat Live Edit Aktif ATAU Ada Teks yang Diseleksi */}
-          {(isLiveEditMode || hasTextSelection) && (
+          {/* WYSIWYG Formatting Bar saat Live Edit Aktif ATAU Ada Teks yang Diseleksi (Khusus Admin) */}
+          {isAdmin && (isLiveEditMode || hasTextSelection) && (
             <div className="no-print w-full mb-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50/70 border border-amber-300 rounded-2xl flex flex-col gap-2.5 shadow-md animate-fadeIn">
               {/* Row 1: Header status & selection info */}
               <div className="flex items-center justify-between gap-2 flex-wrap pb-1.5 border-b border-amber-200/80">
@@ -2013,10 +2040,10 @@ export const SuratView: React.FC<SuratViewProps> = ({
             <div 
               key={resetKey}
               id="surat-print-container"
-              contentEditable={isLiveEditMode}
+              contentEditable={isAdmin && isLiveEditMode}
               suppressContentEditableWarning={true}
               className={`bg-white text-black shadow-2xl rounded-sm w-[210mm] min-h-[297mm] select-text relative border transition-all ${
-                isLiveEditMode 
+                isAdmin && isLiveEditMode 
                   ? 'ring-4 ring-amber-400/40 border-amber-500 cursor-text' 
                   : 'border-slate-200'
               }`}
@@ -2248,44 +2275,11 @@ export const SuratView: React.FC<SuratViewProps> = ({
                       <p>Palopo, {formatIndonesianDate(tanggalSurat)}</p>
                       <p className="font-medium">{jabatanKepsek},</p>
 
-                      {/* Tanda Tangan & Stempel Resmi */}
+                      {/* Ruang Tanda Tangan Resmi (Tanpa Stempel) */}
                       <div 
                         className="my-1 relative flex items-center"
                         style={{ height: `${ttdHeight}px` }}
-                      >
-                        {showSignatureStamp && (
-                          <div className="absolute -left-7 -top-2 flex items-center select-none pointer-events-none">
-                            {/* Realistic Official Round Stamp SVG */}
-                            <div className="w-24 h-24 text-indigo-800/85 rotate-[-12deg] shrink-0 opacity-90 drop-shadow-xs">
-                              <svg viewBox="0 0 100 100" className="w-full h-full fill-none stroke-current stroke-[2.2]">
-                                <circle cx="50" cy="50" r="46" />
-                                <circle cx="50" cy="50" r="41" strokeWidth="1.2" />
-                                <circle cx="50" cy="50" r="28" strokeWidth="1.2" />
-                                <path id="stamp-top-text" d="M 16,50 A 34,34 0 1,1 84,50" fill="none" stroke="none" />
-                                <text className="text-[6.5px] font-black uppercase tracking-widest fill-current">
-                                  <textPath href="#stamp-top-text" startOffset="50%" textAnchor="middle">
-                                    PEMERINTAH PROVINSI
-                                  </textPath>
-                                </text>
-                                <path id="stamp-bottom-text" d="M 84,50 A 34,34 0 0,1 16,50" fill="none" stroke="none" />
-                                <text className="text-[6.2px] font-black uppercase tracking-wider fill-current">
-                                  <textPath href="#stamp-bottom-text" startOffset="50%" textAnchor="middle">
-                                    UPT SMKN 1 PALOPO
-                                  </textPath>
-                                </text>
-                                <polygon points="50,39 53,47 61,47 55,52 57,60 50,55 43,60 45,52 39,47 47,47" fill="currentColor" stroke="none" opacity="0.8" />
-                              </svg>
-                            </div>
-
-                            {/* Realistic Stylized Signature SVG */}
-                            <div className="w-32 h-16 -ml-14 mt-3 text-slate-900 drop-shadow-xs">
-                              <svg viewBox="0 0 140 70" className="w-full h-full stroke-current fill-none stroke-[2.4] stroke-linecap-round stroke-linejoin-round">
-                                <path d="M 15 48 C 22 25, 30 18, 38 42 C 45 60, 52 10, 58 35 C 64 48, 70 30, 80 40 L 95 38 C 110 36, 125 42, 135 45 M 28 42 L 85 43" />
-                              </svg>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                      />
 
                       {/* Info Nama & NIP */}
                       <p 
@@ -2435,50 +2429,11 @@ export const SuratView: React.FC<SuratViewProps> = ({
                       <p>Palopo, {formatIndonesianDate(tanggalSurat)}</p>
                       <p className="font-medium">{jabatanKepsek},</p>
 
-                      {/* Tanda Tangan & Stempel Resmi */}
+                      {/* Ruang Tanda Tangan Resmi (Tanpa Stempel) */}
                       <div 
                         className="my-1 relative flex items-center"
                         style={{ height: `${ttdHeight}px` }}
-                      >
-                        {showSignatureStamp && (
-                          <div className="absolute -left-8 -top-3 flex items-center select-none pointer-events-none">
-                            {/* Stempel Ungu Bulat */}
-                            <div className="w-28 h-28 text-indigo-900/85 rotate-[-8deg] shrink-0 opacity-90 drop-shadow-xs">
-                              <svg viewBox="0 0 100 100" className="w-full h-full fill-none stroke-current stroke-[2.2]">
-                                <circle cx="50" cy="50" r="47" />
-                                <circle cx="50" cy="50" r="42" strokeWidth="1.2" />
-                                <circle cx="50" cy="50" r="28" strokeWidth="1.2" />
-                                <path id="stamp-ket-top" d="M 14,50 A 36,36 0 1,1 86,50" fill="none" stroke="none" />
-                                <text className="text-[6.2px] font-black uppercase tracking-widest fill-current">
-                                  <textPath href="#stamp-ket-top" startOffset="50%" textAnchor="middle">
-                                    PEMERINTAH PROVINSI SULAWESI SELATAN
-                                  </textPath>
-                                </text>
-                                <path id="stamp-ket-mid" d="M 22,50 A 28,28 0 0,1 78,50" fill="none" stroke="none" />
-                                <text className="text-[5.5px] font-bold uppercase tracking-wider fill-current">
-                                  <textPath href="#stamp-ket-mid" startOffset="50%" textAnchor="middle">
-                                    DINAS PENDIDIKAN
-                                  </textPath>
-                                </text>
-                                <path id="stamp-ket-bottom" d="M 86,50 A 36,36 0 0,1 14,50" fill="none" stroke="none" />
-                                <text className="text-[6.5px] font-black uppercase tracking-wider fill-current">
-                                  <textPath href="#stamp-ket-bottom" startOffset="50%" textAnchor="middle">
-                                    UPT SMK 1 PALOPO
-                                  </textPath>
-                                </text>
-                                <polygon points="50,38 53,46 61,46 55,51 57,59 50,54 43,59 45,51 39,46 47,46" fill="currentColor" stroke="none" opacity="0.85" />
-                              </svg>
-                            </div>
-
-                            {/* Coretan Tanda Tangan */}
-                            <div className="w-36 h-20 -ml-16 mt-2 text-slate-900 drop-shadow-xs">
-                              <svg viewBox="0 0 140 70" className="w-full h-full stroke-current fill-none stroke-[2.4] stroke-linecap-round stroke-linejoin-round">
-                                <path d="M 12 45 C 18 22, 28 15, 36 38 C 42 55, 48 8, 56 32 C 62 45, 68 28, 76 38 L 92 36 C 108 34, 122 40, 134 44 M 26 40 L 82 41 M 80 34 L 88 18 L 105 12" />
-                              </svg>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                      />
 
                       {/* Info Nama, Pangkat, NIP */}
                       <p 
