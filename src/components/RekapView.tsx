@@ -388,7 +388,7 @@ export const RekapView: React.FC<RekapViewProps> = ({
 
       bodyData.push([
         '',
-        `Jumlah ${levelItem.level}`,
+        'Jumlah', // atau kondisi: levelItem.level === 'Kelas 12' ? 'Jumlah Total' : `Jumlah ${levelItem.level}`
         String(levelItem.totalLaki),
         String(levelItem.totalPerempuan),
         String(levelItem.total)
