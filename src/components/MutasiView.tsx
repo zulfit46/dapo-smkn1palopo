@@ -72,7 +72,7 @@ interface MutasiViewProps {
   currentUser?: GTKData | null;
   appConfig?: AppConfig;
   onAddStudentToActive?: (student: Student) => void;
-  onUpdateStudentStatus?: (nisn: string, nipd: string, nama: string, status: string, ket: string) => Promise<any> | void;
+  onUpdateStudentStatus?: (nisn: string, nipd: string, nama: string, status: string, ket: string, verval_oleh?: string) => Promise<any> | void;
 }
 
 const API_WILAYAH = "https://www.emsifa.com/api-wilayah-indonesia/api";
@@ -108,6 +108,8 @@ const INITIAL_MUTASI_MASUK: MutasiMasukItem[] = [
     tglMasuk: '15/08/2026',
     timestamp: '15/08/2026 08:30:00',
     status: 'Diterima',
+    verval_oleh: 'Admin',
+    vervalOleh: 'Admin',
     keterangan: 'Pindah domisili orang tua ke Kota Palopo',
     createdAt: '2026-08-15T08:30:00Z'
   },
@@ -128,6 +130,8 @@ const INITIAL_MUTASI_MASUK: MutasiMasukItem[] = [
     tglMasuk: '20/08/2026',
     timestamp: '20/08/2026 10:15:00',
     status: 'Diterima',
+    verval_oleh: 'Admin',
+    vervalOleh: 'Admin',
     keterangan: 'Mutasi jurusan Akuntansi',
     createdAt: '2026-08-20T10:15:00Z'
   },
@@ -148,6 +152,8 @@ const INITIAL_MUTASI_MASUK: MutasiMasukItem[] = [
     tglMasuk: '02/09/2026',
     timestamp: '02/09/2026 09:00:00',
     status: 'Diterima',
+    verval_oleh: 'Admin',
+    vervalOleh: 'Admin',
     keterangan: 'Pindah tugas dinas orang tua',
     createdAt: '2026-09-02T09:00:00Z'
   }
@@ -169,6 +175,8 @@ const INITIAL_MUTASI_KELUAR: MutasiKeluarItem[] = [
     alasanMutasi: 'Mengikuti kepindahan tugas kedinasan orang tua ke Makassar',
     uploadBerkas: '',
     status: 'Selesai',
+    verval_oleh: 'Admin',
+    vervalOleh: 'Admin',
     timestamp: '10/08/2026 09:30:00'
   }
 ];
@@ -184,6 +192,7 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
   // Role detection:
   const isUser = isUserRole(currentUser);
   const isAdmin = !isUser;
+  const currentUserName = currentUser?.nama || (currentUser as any)?.nama_lengkap || currentUser?.id || 'Admin';
 
   // Active Tab: 'masuk' | 'keluar'
   const [activeTab, setActiveTab] = useState<'masuk' | 'keluar'>('masuk');
@@ -542,6 +551,8 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
         tanggalPengajuan: textDate,
         timestamp: editingItem.timestamp || nowTimestamp,
         status: finalStatus,
+        verval_oleh: currentUserName,
+        vervalOleh: currentUserName,
         keterangan: formData.keterangan.trim() || (finalStatus === 'Diterima' ? 'Mutasi Masuk Disetujui' : 'Pengajuan Mutasi Masuk')
       };
       updatedList = mutasiMasukList.map(m => m.id === editingItem.id ? targetItem : m);
@@ -563,6 +574,8 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
         tanggalPengajuan: textDate,
         timestamp: nowTimestamp,
         status: finalStatus,
+        verval_oleh: currentUserName,
+        vervalOleh: currentUserName,
         keterangan: formData.keterangan.trim() || (finalStatus === 'Diterima' ? 'Mutasi Masuk Disetujui' : 'Pengajuan Mutasi Masuk'),
         createdAt: new Date().toISOString()
       };
@@ -592,6 +605,8 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
           ibu: '-',
           statusRegistrasi: 'Pindahan',
           status: 'Aktif',
+          verval_oleh: currentUserName,
+          vervalOleh: currentUserName,
           sekolahAsal: targetItem.sekolahAsal,
           tanggalMasuk: targetItem.tanggalPengajuan || new Date().toISOString().split('T')[0]
         };
@@ -668,6 +683,8 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
     const updatedItem: MutasiMasukItem = {
       ...item,
       status: newStatus,
+      verval_oleh: currentUserName,
+      vervalOleh: currentUserName,
       keterangan: newStatus === 'Diterima' ? 'Mutasi Masuk Disetujui' : 'Pengajuan Mutasi Masuk (Pending Verifikasi)'
     };
 
@@ -693,6 +710,8 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
           ibu: '-',
           statusRegistrasi: 'Pindahan',
           status: 'Aktif',
+          verval_oleh: currentUserName,
+          vervalOleh: currentUserName,
           sekolahAsal: updatedItem.sekolahAsal,
           tanggalMasuk: updatedItem.tanggalPengajuan || new Date().toISOString().split('T')[0]
         };
@@ -718,7 +737,9 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
     const newStatus: 'Selesai' | 'Diproses' = item.status === 'Selesai' ? 'Diproses' : 'Selesai';
     const updatedItem: MutasiKeluarItem = {
       ...item,
-      status: newStatus
+      status: newStatus,
+      verval_oleh: currentUserName,
+      vervalOleh: currentUserName
     };
 
     const updatedList = mutasiKeluarList.map(m => m.id === item.id ? updatedItem : m);
@@ -1097,6 +1118,8 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
         alasanMutasi: formKeluarData.alasanMutasi.trim(),
         uploadBerkas: finalUploadBerkas,
         status: finalKeluarStatus,
+        verval_oleh: currentUserName,
+        vervalOleh: currentUserName,
         timestamp: editingKeluarItem.timestamp || nowTimestamp
       };
       updatedList = mutasiKeluarList.map(m => m.id === editingKeluarItem.id ? targetItem : m);
@@ -1117,6 +1140,8 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
         alasanMutasi: formKeluarData.alasanMutasi.trim(),
         uploadBerkas: finalUploadBerkas,
         status: finalKeluarStatus,
+        verval_oleh: currentUserName,
+        vervalOleh: currentUserName,
         timestamp: nowTimestamp
       };
       updatedList = [targetItem, ...mutasiKeluarList];
@@ -1134,7 +1159,8 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
           targetItem.nipd || '',
           targetItem.nama || '',
           'Tidak Aktif',
-          targetItem.ketMutasi || 'Mutasi'
+          targetItem.ketMutasi || 'Mutasi',
+          currentUserName
         );
       } catch (stuErr) {
         console.warn('Gagal otomatis memperbarui status siswa menjadi Tidak Aktif:', stuErr);
@@ -1243,7 +1269,7 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
     }
   };
 
-  // Export Excel (.xlsx) for Mutasi Keluar with all 14 official headers
+  // Export Excel (.xlsx) for Mutasi Keluar with all 15 official headers
   const handleExportKeluarExcel = () => {
     const headers = [
       'No',
@@ -1259,6 +1285,7 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
       'alasan_mutasi',
       'upload_berkas',
       'Status',
+      'verval_oleh',
       'Timestamp'
     ];
 
@@ -1276,6 +1303,7 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
       item.alasanMutasi || '',
       item.uploadBerkas || '',
       item.status || 'Selesai',
+      item.verval_oleh || item.vervalOleh || '',
       item.timestamp || ''
     ]);
 
@@ -1323,7 +1351,7 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
 
   // Export CSV
   const handleExportData = () => {
-    const headers = ['No', 'NISN', 'Nama Siswa', 'Provinsi Asal', 'Kab/Kota Asal', 'Kecamatan Asal', 'Sekolah Asal', 'Rombel Tujuan', 'Tgl Masuk', 'Status'];
+    const headers = ['No', 'NISN', 'Nama Siswa', 'Provinsi Asal', 'Kab/Kota Asal', 'Kecamatan Asal', 'Sekolah Asal', 'Rombel Tujuan', 'Tgl Masuk', 'Status', 'verval_oleh'];
     const rows = filteredMutasiMasuk.map((item, idx) => [
       idx + 1,
       `'${item.nisn}`,
@@ -1334,7 +1362,8 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
       item.sekolahAsal || '',
       item.rombelTujuan || '',
       formatToDDMMYYYY(item.tglMasuk || item.timestamp || item.tanggalPengajuan || ''),
-      item.status
+      item.status,
+      item.verval_oleh || item.vervalOleh || ''
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + 
@@ -1777,6 +1806,19 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                       </div>
                     )}
                   </div>
+
+                  {/* Info Petugas Verval */}
+                  <div className="lg:col-span-3">
+                    <div className="flex items-center justify-between gap-2 p-2.5 bg-indigo-50/70 border border-indigo-100 rounded-xl text-xs text-indigo-900">
+                      <div className="flex items-center gap-2">
+                        <UserCheck className="w-4 h-4 text-indigo-600 shrink-0" />
+                        <span>Aktivitas Verval Oleh: <strong className="text-indigo-950 font-bold">{currentUserName}</strong></span>
+                      </div>
+                      <span className="text-[10.5px] font-mono text-indigo-600 bg-white px-2 py-0.5 rounded-md border border-indigo-200">
+                        header: verval_oleh
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Form Actions (Batal & Simpan) */}
@@ -1933,13 +1975,14 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                       <span className="block text-[10px] text-indigo-600 font-normal"></span>
                     </th>
                     <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[100px] text-center border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Status</th>
+                    <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[120px] text-center border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Verval Oleh</th>
                     <th className="sticky top-0 right-0 z-30 bg-slate-100 py-2.5 px-3 text-center shadow-xs w-24 border-l border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 text-slate-800">
                   {paginatedMutasiMasuk.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center text-slate-500 italic">
+                      <td colSpan={9} className="py-12 text-center text-slate-500 italic">
                         <UserPlus className="w-10 h-10 mx-auto mb-2 text-slate-400" />
                         <p className="font-semibold text-slate-600">Belum ada data mutasi masuk.</p>
                         <p className="text-[11px] text-slate-400 mt-1">Klik tombol "Tambah Mutasi Masuk" untuk membuka form input data baru.</p>
@@ -2014,6 +2057,10 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                                 {item.status}
                               </span>
                             )}
+                          </td>
+
+                          <td className="py-2.5 px-3 text-center border-r border-slate-200 text-xs font-medium text-slate-700">
+                            {item.verval_oleh || item.vervalOleh || '-'}
                           </td>
 
                           <td className="py-2.5 px-3 text-center sticky right-0 bg-white shadow-xs border-l border-slate-200">
@@ -2809,6 +2856,19 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                       </div>
                     )}
                   </div>
+
+                  {/* Info Petugas Verval */}
+                  <div className="lg:col-span-2">
+                    <div className="flex items-center justify-between gap-2 p-2.5 bg-rose-50/70 border border-rose-100 rounded-xl text-xs text-rose-900">
+                      <div className="flex items-center gap-2">
+                        <UserCheck className="w-4 h-4 text-rose-600 shrink-0" />
+                        <span>Aktivitas Verval Oleh: <strong className="text-rose-950 font-bold">{currentUserName}</strong></span>
+                      </div>
+                      <span className="text-[10.5px] font-mono text-rose-600 bg-white px-2 py-0.5 rounded-md border border-rose-200">
+                        header: verval_oleh
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Form Actions (Batal & Simpan) */}
@@ -3018,13 +3078,14 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                     <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[160px] border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Alasan Mutasi</th>
                     <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[80px] text-center border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Berkas</th>
                     <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[90px] text-center border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Status</th>
+                    <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[120px] text-center border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Verval Oleh</th>
                     <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 text-center min-w-[95px] border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white text-slate-800">
                   {paginatedMutasiKeluar.length === 0 ? (
                     <tr>
-                      <td colSpan={13} className="py-12 text-center text-slate-500 italic">
+                      <td colSpan={14} className="py-12 text-center text-slate-500 italic">
                         <UserMinus className="w-10 h-10 mx-auto mb-2 text-slate-400" />
                         <p className="font-semibold text-slate-700">Tidak ada catatan siswa mutasi keluar</p>
                         <p className="text-xs text-slate-400 mt-1">Gunakan tombol "Catat Mutasi Keluar" atau "Refresh Sheet" untuk menyinkronkan data.</p>
@@ -3103,6 +3164,9 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                                 {item.status === 'Diproses' ? 'Diproses' : 'Selesai'}
                               </span>
                             )}
+                          </td>
+                          <td className="py-2.5 px-3 text-center border-r border-slate-200 text-xs font-medium text-slate-700">
+                            {item.verval_oleh || item.vervalOleh || '-'}
                           </td>
                           <td className="py-2.5 px-3 text-center">
                             <div className="flex items-center justify-center gap-1">
@@ -3281,6 +3345,10 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                     <span className="text-slate-600 font-mono text-[11px]">{selectedKeluarDetail.timestamp}</span>
                   </div>
                 )}
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Diverval Oleh</span>
+                  <span className="text-slate-800 font-semibold">{selectedKeluarDetail.verval_oleh || selectedKeluarDetail.vervalOleh || '-'}</span>
+                </div>
               </div>
             </div>
 
@@ -3485,6 +3553,10 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                     <span className="text-slate-600 font-mono text-[11px]">{selectedDetail.timestamp}</span>
                   </div>
                 )}
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Diverval Oleh (verval_oleh)</span>
+                  <span className="text-slate-800 font-semibold">{selectedDetail.verval_oleh || selectedDetail.vervalOleh || '-'}</span>
+                </div>
                 {selectedDetail.keterangan && (
                   <div>
                     <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Keterangan Tambahan</span>
