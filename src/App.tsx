@@ -720,10 +720,17 @@ export default function App() {
               currentUser={currentUser}
               appConfig={appConfig}
               onAddStudentToActive={(newStudent) => {
-                setStudents(prev => [newStudent, ...prev]);
-                safeSetItem('dapodik_cached_students', [newStudent, ...students]);
+                const vervalUser = newStudent.verval_oleh || currentUser?.nama || (currentUser as any)?.nama_lengkap || currentUser?.id || 'Admin';
+                const studentWithVerval = {
+                  ...newStudent,
+                  verval_oleh: vervalUser,
+                  vervalOleh: vervalUser
+                };
+                setStudents(prev => [studentWithVerval, ...prev]);
+                safeSetItem('dapodik_cached_students', [studentWithVerval, ...students]);
               }}
-              onUpdateStudentStatus={async (nisn, nipd, nama, status, ket) => {
+              onUpdateStudentStatus={async (nisn, nipd, nama, status, ket, verval_oleh) => {
+                const vervalUser = verval_oleh || currentUser?.nama || (currentUser as any)?.nama_lengkap || currentUser?.id || 'Admin';
                 await handleSaveVerval([{
                   id: nisn || nipd || nama,
                   studentId: nisn || nipd || nama,
@@ -731,7 +738,9 @@ export default function App() {
                   nipd,
                   nama,
                   status,
-                  ket
+                  ket,
+                  verval_oleh: vervalUser,
+                  vervalOleh: vervalUser
                 }]);
               }}
             />
