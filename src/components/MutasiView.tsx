@@ -1806,19 +1806,6 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                       </div>
                     )}
                   </div>
-
-                  {/* Info Petugas Verval */}
-                  <div className="lg:col-span-3">
-                    <div className="flex items-center justify-between gap-2 p-2.5 bg-indigo-50/70 border border-indigo-100 rounded-xl text-xs text-indigo-900">
-                      <div className="flex items-center gap-2">
-                        <UserCheck className="w-4 h-4 text-indigo-600 shrink-0" />
-                        <span>Aktivitas Verval Oleh: <strong className="text-indigo-950 font-bold">{currentUserName}</strong></span>
-                      </div>
-                      <span className="text-[10.5px] font-mono text-indigo-600 bg-white px-2 py-0.5 rounded-md border border-indigo-200">
-                        header: verval_oleh
-                      </span>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Form Actions (Batal & Simpan) */}
@@ -1975,14 +1962,16 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                       <span className="block text-[10px] text-indigo-600 font-normal"></span>
                     </th>
                     <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[100px] text-center border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Status</th>
-                    <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[120px] text-center border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Verval Oleh</th>
+                    {isAdmin && (
+                      <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[120px] text-center border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Verval Oleh</th>
+                    )}
                     <th className="sticky top-0 right-0 z-30 bg-slate-100 py-2.5 px-3 text-center shadow-xs w-24 border-l border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 text-slate-800">
                   {paginatedMutasiMasuk.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="py-12 text-center text-slate-500 italic">
+                      <td colSpan={isAdmin ? 9 : 8} className="py-12 text-center text-slate-500 italic">
                         <UserPlus className="w-10 h-10 mx-auto mb-2 text-slate-400" />
                         <p className="font-semibold text-slate-600">Belum ada data mutasi masuk.</p>
                         <p className="text-[11px] text-slate-400 mt-1">Klik tombol "Tambah Mutasi Masuk" untuk membuka form input data baru.</p>
@@ -2059,9 +2048,11 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                             )}
                           </td>
 
-                          <td className="py-2.5 px-3 text-center border-r border-slate-200 text-xs font-medium text-slate-700">
-                            {item.verval_oleh || item.vervalOleh || '-'}
-                          </td>
+                          {isAdmin && (
+                            <td className="py-2.5 px-3 text-center border-r border-slate-200 text-xs font-medium text-slate-700">
+                              {item.verval_oleh || item.vervalOleh || '-'}
+                            </td>
+                          )}
 
                           <td className="py-2.5 px-3 text-center sticky right-0 bg-white shadow-xs border-l border-slate-200">
                             <div className="flex items-center justify-center gap-1">
@@ -2856,19 +2847,6 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                       </div>
                     )}
                   </div>
-
-                  {/* Info Petugas Verval */}
-                  <div className="lg:col-span-2">
-                    <div className="flex items-center justify-between gap-2 p-2.5 bg-rose-50/70 border border-rose-100 rounded-xl text-xs text-rose-900">
-                      <div className="flex items-center gap-2">
-                        <UserCheck className="w-4 h-4 text-rose-600 shrink-0" />
-                        <span>Aktivitas Verval Oleh: <strong className="text-rose-950 font-bold">{currentUserName}</strong></span>
-                      </div>
-                      <span className="text-[10.5px] font-mono text-rose-600 bg-white px-2 py-0.5 rounded-md border border-rose-200">
-                        header: verval_oleh
-                      </span>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Form Actions (Batal & Simpan) */}
@@ -3078,14 +3056,16 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                     <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[160px] border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Alasan Mutasi</th>
                     <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[80px] text-center border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Berkas</th>
                     <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[90px] text-center border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Status</th>
-                    <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[120px] text-center border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Verval Oleh</th>
+                    {isAdmin && (
+                      <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 min-w-[120px] text-center border-r border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Verval Oleh</th>
+                    )}
                     <th className="sticky top-0 z-10 bg-slate-100 py-2.5 px-3 text-center min-w-[95px] border-b border-slate-300 shadow-[inset_0_-1px_0_rgba(203,213,225,1)]">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white text-slate-800">
                   {paginatedMutasiKeluar.length === 0 ? (
                     <tr>
-                      <td colSpan={14} className="py-12 text-center text-slate-500 italic">
+                      <td colSpan={isAdmin ? 14 : 13} className="py-12 text-center text-slate-500 italic">
                         <UserMinus className="w-10 h-10 mx-auto mb-2 text-slate-400" />
                         <p className="font-semibold text-slate-700">Tidak ada catatan siswa mutasi keluar</p>
                         <p className="text-xs text-slate-400 mt-1">Gunakan tombol "Catat Mutasi Keluar" atau "Refresh Sheet" untuk menyinkronkan data.</p>
@@ -3165,9 +3145,13 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                               </span>
                             )}
                           </td>
-                          <td className="py-2.5 px-3 text-center border-r border-slate-200 text-xs font-medium text-slate-700">
-                            {item.verval_oleh || item.vervalOleh || '-'}
-                          </td>
+
+                          {isAdmin && (
+                            <td className="py-2.5 px-3 text-center border-r border-slate-200 text-xs font-medium text-slate-700">
+                              {item.verval_oleh || item.vervalOleh || '-'}
+                            </td>
+                          )}
+
                           <td className="py-2.5 px-3 text-center">
                             <div className="flex items-center justify-center gap-1">
                               <button
@@ -3345,10 +3329,12 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                     <span className="text-slate-600 font-mono text-[11px]">{selectedKeluarDetail.timestamp}</span>
                   </div>
                 )}
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Diverval Oleh</span>
-                  <span className="text-slate-800 font-semibold">{selectedKeluarDetail.verval_oleh || selectedKeluarDetail.vervalOleh || '-'}</span>
-                </div>
+                {isAdmin && (
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Diverval Oleh</span>
+                    <span className="text-slate-800 font-semibold">{selectedKeluarDetail.verval_oleh || selectedKeluarDetail.vervalOleh || '-'}</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -3553,10 +3539,12 @@ export const MutasiView: React.FC<MutasiViewProps> = ({
                     <span className="text-slate-600 font-mono text-[11px]">{selectedDetail.timestamp}</span>
                   </div>
                 )}
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Diverval Oleh (verval_oleh)</span>
-                  <span className="text-slate-800 font-semibold">{selectedDetail.verval_oleh || selectedDetail.vervalOleh || '-'}</span>
-                </div>
+                {isAdmin && (
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Diverval Oleh</span>
+                    <span className="text-slate-800 font-semibold">{selectedDetail.verval_oleh || selectedDetail.vervalOleh || '-'}</span>
+                  </div>
+                )}
                 {selectedDetail.keterangan && (
                   <div>
                     <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Keterangan Tambahan</span>
