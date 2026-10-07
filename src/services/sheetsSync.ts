@@ -1119,6 +1119,7 @@ export async function fetchMutasiMasukDirectly(config: AppConfig): Promise<Mutas
               sekolahAsal: String(item.sekolahAsal || item.Nama_Sekolah || item.nama_sekolah || item.sekolahasal || '').trim(),
               rombelTujuan: String(item.rombelTujuan || item.Rombel_Tujuan || item.rombel_tujuan || '').trim(),
               status: cleanStatus,
+              verval_oleh: String(item.verval_oleh || item.vervalOleh || item.Verval_Oleh || '').trim(),
               timestamp: String(item.timestamp || item.Timestamp || '').trim(),
               tanggalPengajuan: String(item.tanggalPengajuan || item.timestamp || '').split(' ')[0],
               rowIndex: item.rowIndex || idx + 2
@@ -1186,6 +1187,7 @@ export async function fetchMutasiMasukDirectly(config: AppConfig): Promise<Mutas
                 }
                 if (hClean === 'timestamp') obj.timestamp = strVal;
                 if (hClean === 'tglmasuk' || hClean === 'tanggalmasuk') obj.tglMasuk = strVal;
+                if (hClean === 'vervaloleh' || hClean === 'verval') obj.verval_oleh = strVal;
               });
 
               // If row has minimal data (nisn or nama)
@@ -1203,6 +1205,8 @@ export async function fetchMutasiMasukDirectly(config: AppConfig): Promise<Mutas
                   sekolahAsal: obj.sekolahAsal || '',
                   rombelTujuan: obj.rombelTujuan || '',
                   status: cleanStatus,
+                  verval_oleh: obj.verval_oleh || '',
+                  vervalOleh: obj.verval_oleh || '',
                   timestamp: obj.timestamp || '',
                   tglMasuk: dateOnlyText,
                   tanggalPengajuan: dateOnlyText,
@@ -1255,6 +1259,8 @@ export async function saveMutasiMasukDirectly(
     sekolah_asal: item.sekolahAsal || '',
     rombel_tujuan: item.rombelTujuan || '',
     status: item.status === 'Diterima' ? 'Diterima' : 'Pending',
+    verval_oleh: item.verval_oleh || item.vervalOleh || '',
+    vervaloleh: item.verval_oleh || item.vervalOleh || '',
     timestamp: rawTs,
     tgl_masuk: dateOnlyText,
     tglmasuk: dateOnlyText,
@@ -1351,6 +1357,8 @@ export async function syncAllMutasiMasukDirectly(
         nama_sekolah: m.sekolahAsal || '',
         rombel_tujuan: m.rombelTujuan || '',
         status: m.status === 'Diterima' ? 'Diterima' : 'Pending',
+        verval_oleh: m.verval_oleh || m.vervalOleh || '',
+        vervaloleh: m.verval_oleh || m.vervalOleh || '',
         timestamp: m.timestamp || new Date().toISOString().replace('T', ' ').substring(0, 19),
         tgl_masuk: formatToDDMMYYYY(m.tglMasuk || m.timestamp || ''),
         tglmasuk: formatToDDMMYYYY(m.tglMasuk || m.timestamp || ''),
@@ -1402,6 +1410,7 @@ export async function fetchMutasiKeluarDirectly(config: AppConfig): Promise<Muta
               alasanMutasi: String(item.alasanMutasi || item.alasan_mutasi || '').trim(),
               uploadBerkas: String(item.uploadBerkas || item.upload_berkas || '').trim(),
               status: String(item.status || item.Status || 'Selesai').trim(),
+              verval_oleh: String(item.verval_oleh || item.vervalOleh || item.Verval_Oleh || '').trim(),
               timestamp: String(item.timestamp || item.Timestamp || '').trim(),
               rowIndex: item.rowIndex || idx + 2
             };
@@ -1468,6 +1477,7 @@ export async function fetchMutasiKeluarDirectly(config: AppConfig): Promise<Muta
                 if (hClean === 'uploadberkas' || hClean === 'berkas') obj.uploadBerkas = strVal;
                 if (hClean === 'status') obj.status = strVal;
                 if (hClean === 'timestamp') obj.timestamp = strVal;
+                if (hClean === 'vervaloleh' || hClean === 'verval') obj.verval_oleh = strVal;
               });
 
               if (obj.nisn || obj.nama || obj.nipd) {
@@ -1486,6 +1496,8 @@ export async function fetchMutasiKeluarDirectly(config: AppConfig): Promise<Muta
                   alasanMutasi: obj.alasanMutasi || '',
                   uploadBerkas: obj.uploadBerkas || '',
                   status: obj.status || 'Selesai',
+                  verval_oleh: obj.verval_oleh || '',
+                  vervalOleh: obj.verval_oleh || '',
                   timestamp: obj.timestamp || '',
                   rowIndex: i + 1
                 });
@@ -1539,6 +1551,8 @@ export async function saveMutasiKeluarDirectly(
     alasan_mutasi: item.alasanMutasi || '',
     upload_berkas: item.uploadBerkas || '',
     status: item.status || 'Selesai',
+    verval_oleh: item.verval_oleh || item.vervalOleh || '',
+    vervaloleh: item.verval_oleh || item.vervalOleh || '',
     timestamp: rawTs
   };
 
@@ -1755,6 +1769,7 @@ export async function syncAllMutasiKeluarDirectly(
         alasan_mutasi: m.alasanMutasi || '',
         upload_berkas: m.uploadBerkas || '',
         status: m.status || 'Selesai',
+        verval_oleh: m.verval_oleh || m.vervalOleh || '',
         timestamp: m.timestamp || new Date().toISOString().replace('T', ' ').substring(0, 19)
       }))
     };
