@@ -322,6 +322,8 @@ export interface MutasiMasukItem {
   tglMasuk?: string;
   status: 'Pending' | 'Diterima';
   keterangan?: string;
+  verval_oleh?: string;
+  vervalOleh?: string;
   createdAt?: string;
   rowIndex?: number;
 }
@@ -341,6 +343,8 @@ export interface MutasiKeluarItem {
   alasanMutasi?: string;
   uploadBerkas?: string;
   status?: 'Selesai' | 'Diproses' | string;
+  verval_oleh?: string;
+  vervalOleh?: string;
   timestamp?: string;
   createdAt?: string;
   rowIndex?: number;
