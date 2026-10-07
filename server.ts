@@ -2145,6 +2145,7 @@ async function startServer() {
           alasan_mutasi: item.alasanMutasi || item.alasan_mutasi || "",
           upload_berkas: item.uploadBerkas || item.upload_berkas || "",
           status: item.status || "Selesai",
+          verval_oleh: item.verval_oleh || item.vervalOleh || "",
           timestamp: item.timestamp || new Date().toISOString().replace('T', ' ').substring(0, 19)
         }
       };
@@ -2157,6 +2158,7 @@ async function startServer() {
       const targetNipd = String(item.nipd || "").trim();
       const targetNama = String(item.nama || "").trim().toLowerCase();
       const targetKet = String(item.ketMutasi || item.ket_mutasi || "Mutasi").trim();
+      const targetVerval = String(item.verval_oleh || item.vervalOleh || "").trim();
 
       const updateStudentInactive = (s: any) => {
         const isMatch = (targetNisn && s.nisn === targetNisn) ||
@@ -2166,7 +2168,9 @@ async function startServer() {
           return {
             ...s,
             status: "Tidak Aktif",
-            ket: targetKet
+            ket: targetKet,
+            verval_oleh: targetVerval || s.verval_oleh,
+            vervalOleh: targetVerval || s.vervalOleh
           };
         }
         return s;
@@ -2340,12 +2344,43 @@ async function startServer() {
           rombel_tujuan: item.rombelTujuan || item.rombel_tujuan || "",
           status: item.status === "Diterima" ? "Diterima" : "Pending",
           timestamp: item.timestamp || new Date().toISOString().replace('T', ' ').substring(0, 19),
-          tgl_masuk: item.tglMasuk || item.tgl_masuk || ""
+          tgl_masuk: item.tglMasuk || item.tgl_masuk || "",
+          verval_oleh: item.verval_oleh || item.vervalOleh || ""
         }
       };
 
       console.log(`[Mutasi Masuk Save] Mengirim data NISN ${gasPayload.item.nisn} ke Google Sheets...`);
       const gasRes = await sendToGas(targetWebAppUrl, gasPayload, 30000);
+
+      // Jika status Diterima, perbarui siswa di memori server dengan verval_oleh
+      if (gasPayload.item.status === "Diterima") {
+        const targetNisn = String(gasPayload.item.nisn || "").trim();
+        const targetNama = String(gasPayload.item.nama || "").trim().toLowerCase();
+        const targetVerval = String(gasPayload.item.verval_oleh || "").trim();
+
+        const updateStudentActive = (s: any) => {
+          const isMatch = (targetNisn && s.nisn === targetNisn) ||
+                          (targetNama && s.nama?.trim().toLowerCase() === targetNama);
+          if (isMatch) {
+            return {
+              ...s,
+              status: "Aktif",
+              statusRegistrasi: "Pindahan",
+              ket: "Pindahan",
+              verval_oleh: targetVerval || s.verval_oleh,
+              vervalOleh: targetVerval || s.vervalOleh
+            };
+          }
+          return s;
+        };
+
+        if (Array.isArray(cachedSheetsData)) {
+          cachedSheetsData = cachedSheetsData.map(updateStudentActive);
+        }
+        if (Array.isArray(studentList)) {
+          studentList = studentList.map(updateStudentActive);
+        }
+      }
 
       return res.json({
         status: "success",
